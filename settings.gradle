@@ -1,2 +1,3 @@
+include ':deeppanel'
 include ':app'
 rootProject.name = "DeepPanelAndroid"
