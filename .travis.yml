@@ -26,4 +26,4 @@ before_script:
   - adb shell input keyevent 82 &
 
 script:
-  - ./gradlew ktlint check
+  - ./gradlew ktlintCheck check
