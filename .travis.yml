@@ -1,0 +1,28 @@
+language: android
+sudo: required
+jdk:
+  - oraclejdk8
+
+android:
+  components:
+    - tools
+    - platform-tools
+    - build-tools-29.0.3
+    - android-29
+    - extra-android-support
+    - extra-google-m2repository
+    - extra-android-m2repository
+    - sys-img-armeabi-v7a-android-29
+
+before_script:
+  - echo no | android create avd --force -n test -t android-29 --abi armeabi-v7a
+  - mksdcard -l sdcard 100M sdcard
+  - emulator -avd test -no-audio -no-window -sdcard sdcard &
+  - android-wait-for-emulator
+  - adb shell settings put global window_animation_scale 0 &
+  - adb shell settings put global transition_animation_scale 0 &
+  - adb shell settings put global animator_duration_scale 0 &
+  - adb shell input keyevent 82 &
+
+script:
+  - ./gradlew ktlint check
