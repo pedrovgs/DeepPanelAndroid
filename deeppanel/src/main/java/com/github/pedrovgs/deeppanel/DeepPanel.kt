@@ -68,21 +68,14 @@ class DeepPanel {
         imgData.order(ByteOrder.nativeOrder())
         val pixels = IntArray(inputImageWidth * inputImageHeight)
         bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
-        var pixel = 0
-        for (i in 0 until 224) {
-            for (j in 0 until 224) {
-                val pixelInfo: Int = pixels[pixel++]
-                val normalizedRedChannel = Color.red(pixelInfo) / 255f
-                print("[$normalizedRedChannel,")
-                imgData.putFloat(normalizedRedChannel)
-                val normalizedGreenChannel = Color.green(pixelInfo) / 255f
-                print("$normalizedGreenChannel,")
-                imgData.putFloat(normalizedGreenChannel)
-                val normalizedBlueChannel = Color.blue(pixelInfo) / 255f
-                print("$normalizedBlueChannel],")
-                imgData.putFloat(normalizedBlueChannel)
-            }
-            println()
+        for (i in pixels.indices) {
+            val pixelInfo: Int = pixels[i]
+            val normalizedRedChannel = Color.red(pixelInfo) / 255f
+            imgData.putFloat(normalizedRedChannel)
+            val normalizedGreenChannel = Color.green(pixelInfo) / 255f
+            imgData.putFloat(normalizedGreenChannel)
+            val normalizedBlueChannel = Color.blue(pixelInfo) / 255f
+            imgData.putFloat(normalizedBlueChannel)
         }
         return imgData
     }
@@ -91,7 +84,8 @@ class DeepPanel {
         val labeledPrediction = Array(224) { Array(224) { 0 } }
         for (i in 0 until 224) {
             for (j in 0 until 224) {
-                //I don't know why the prediction seems to be turned 90 degrees to the left
+                // This change in the index usage is needed because the input of the model
+                // is turned 90 degress to the left
                 val pixel = prediction[j][i]
                 val background = pixel[0]
                 val border = pixel[1]
