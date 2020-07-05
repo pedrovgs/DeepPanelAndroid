@@ -1,11 +1,15 @@
 package com.github.pedrovgs.deeppanel
 
 import android.content.Context
-import android.graphics.*
-import org.tensorflow.lite.Interpreter
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Matrix
+import android.graphics.Paint
+import android.graphics.RectF
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-
+import org.tensorflow.lite.Interpreter
 
 class DeepPanel {
     companion object {
@@ -48,7 +52,6 @@ class DeepPanel {
         canvas.drawBitmap(bitmapToResize, matrix, Paint())
         return blackBackgroundBitmap
     }
-
 
     private fun loadModel(context: Context): ByteBuffer {
         val inputStream = context.resources.openRawResource(R.raw.model)
@@ -101,7 +104,6 @@ class DeepPanel {
         }
         return labeledPrediction
     }
-
 }
 
 typealias Prediction = Array<Array<Int>>
