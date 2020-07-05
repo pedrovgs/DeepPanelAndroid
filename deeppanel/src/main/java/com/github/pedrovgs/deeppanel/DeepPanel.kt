@@ -30,21 +30,22 @@ class DeepPanel {
         return PredictionResult(bitmap, resizedImage, labeledPrediction)
     }
 
-    private fun resizeInput(b: Bitmap): Bitmap {
+    private fun resizeInput(bitmapToResize: Bitmap): Bitmap {
         val reqWidth = inputImageWidth.toFloat()
         val reqHeight = inputImageHeight.toFloat()
-        val m = Matrix()
-        m.setRectToRect(
-            RectF(0f, 0f, b.width.toFloat(), b.height.toFloat()),
+        val matrix = Matrix()
+        matrix.setRectToRect(
+            RectF(0f, 0f, bitmapToResize.width.toFloat(), bitmapToResize.height.toFloat()),
             RectF(0f, 0f, reqWidth, reqHeight),
             Matrix.ScaleToFit.CENTER
         )
-        val blackBackgroundBitmap = Bitmap.createBitmap(reqWidth.toInt(), reqHeight.toInt(), Bitmap.Config.ARGB_8888)
+        val blackBackgroundBitmap =
+            Bitmap.createBitmap(reqWidth.toInt(), reqHeight.toInt(), Bitmap.Config.ARGB_8888)
         val canvas = Canvas(blackBackgroundBitmap)
         val paint = Paint()
         paint.color = Color.BLACK
         canvas.drawRect(0f, 0f, reqWidth, reqHeight, paint)
-        canvas.drawBitmap(b, m, Paint())
+        canvas.drawBitmap(bitmapToResize, matrix, Paint())
         return blackBackgroundBitmap
     }
 
@@ -64,9 +65,13 @@ class DeepPanel {
         val modelInputSize =
             floatTypeSizeInBytes * inputImageWidth * inputImageHeight * numberOfChannels
         val imgData = ByteBuffer.allocateDirect(modelInputSize)
+        imgData.order(ByteOrder.nativeOrder())
+        val pixels = IntArray(inputImageWidth * inputImageHeight)
+        bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+        var pixel = 0
         for (i in 0 until 224) {
             for (j in 0 until 224) {
-                val pixelInfo: Int = bitmap.getPixel(i, j)
+                val pixelInfo: Int = pixels[pixel++]
                 val normalizedRedChannel = Color.red(pixelInfo) / 255f
                 print("[$normalizedRedChannel,")
                 imgData.putFloat(normalizedRedChannel)
@@ -79,7 +84,6 @@ class DeepPanel {
             }
             println()
         }
-        imgData.rewind()
         return imgData
     }
 
@@ -87,7 +91,8 @@ class DeepPanel {
         val labeledPrediction = Array(224) { Array(224) { 0 } }
         for (i in 0 until 224) {
             for (j in 0 until 224) {
-                val pixel = prediction[i][j]
+                //I don't know why the prediction seems to be turned 90 degrees to the left
+                val pixel = prediction[j][i]
                 val background = pixel[0]
                 val border = pixel[1]
                 val content = pixel[2]

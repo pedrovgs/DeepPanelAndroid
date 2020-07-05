@@ -14,7 +14,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val deepPanel = DeepPanel()
         deepPanel.initialize(this)
-        val bitmapSamplePage = resources.getDrawable(R.drawable.sample_page_3, null).toBitmap()
+        val bitmapSamplePage = resources.getDrawable(R.drawable.sample_page_4, null).toBitmap()
         val result = deepPanel.extractPanels(bitmapSamplePage)
         image.setImageBitmap(result.imageInput)
         prediction.setImageBitmap(result.resizedImage)
