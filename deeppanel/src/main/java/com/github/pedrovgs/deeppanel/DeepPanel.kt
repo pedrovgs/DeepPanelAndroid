@@ -14,7 +14,7 @@ class DeepPanel {
     companion object {
         private const val inputImageWidth = 224
         private const val inputImageHeight = 224
-        private const val borderSize = 10
+        private const val borderSize = 4
     }
 
     private lateinit var interpreter: Interpreter
