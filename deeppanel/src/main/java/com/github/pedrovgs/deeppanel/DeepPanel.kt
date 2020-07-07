@@ -1,20 +1,24 @@
 package com.github.pedrovgs.deeppanel
 
 import android.content.Context
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Matrix
+import android.graphics.Paint
+import android.graphics.RectF
 import android.util.Log
-import org.tensorflow.lite.Interpreter
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.max
 import kotlin.math.min
-
+import org.tensorflow.lite.Interpreter
 
 class DeepPanel {
     companion object {
         private const val inputImageWidth = 224
         private const val inputImageHeight = 224
-        private const val borderSize = 4
+        private const val borderSize = 3
     }
 
     private lateinit var interpreter: Interpreter
@@ -125,7 +129,7 @@ class DeepPanel {
     }
 
     private fun findPanels(labeledPrediction: Array<Array<Int>>): Array<Array<Int>> {
-        //val rawAreas = CCL.twoPass(labeledPrediction)
+        // val rawAreas = CCL.twoPass(labeledPrediction)
         val rawAreas = ConnectedComponentLabeling.findAreas(labeledPrediction)
         val fixedAreas = removeSmallAreas(rawAreas)
         val normalizedAreas = normalizeAreas(fixedAreas)
@@ -177,12 +181,10 @@ class DeepPanel {
                         fixedAreas[x][y] = -1
                     }
                 }
-
             }
         }
         return fixedAreas
     }
-
 
     private fun resizeInput(bitmapToResize: Bitmap): Bitmap {
         val reqWidth = inputImageWidth.toFloat()

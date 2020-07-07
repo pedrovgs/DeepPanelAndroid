@@ -1,6 +1,6 @@
 package com.github.pedrovgs.deeppanel
 
-import java.util.*
+import java.util.Arrays
 
 object CCL {
     fun twoPass(matrix: Array<Array<Int>>): Array<Array<Int>> {
@@ -13,7 +13,7 @@ object CCL {
         val labels =
             Array(rowLength) { Array(columnLength) { 0 } }
 
-        //First step
+        // First step
         for (row in 0 until rowLength) {
             for (column in 0 until columnLength) {
                 if (matrix[row][column] > 1) {
@@ -41,7 +41,7 @@ object CCL {
             }
         }
 
-        //Second pass
+        // Second pass
         val vector = Array(nextLabel) { 0 }
         for (i in 0 until nextLabel) {
             if (i < linked.count()) {

@@ -17,7 +17,7 @@ object ConnectedComponentLabeling {
                 if (inputMatrix[i][j] == 1) 1 else 0
             }
         }
-        //First pass
+        // First pass
         for (row in imageSizeRange) {
             for (column in imageSizeRange) {
                 val isNotBackgroundOrContent = inputMatrix[row][column] > backgroundLabel
@@ -51,7 +51,7 @@ object ConnectedComponentLabeling {
             }
         }
 
-        //Second pass
+        // Second pass
         for (row in imageSizeRange) {
             for (column in imageSizeRange) {
                 val isNotBackgroundOrContent = inputMatrix[row][column] > backgroundLabel

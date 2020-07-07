@@ -1,6 +1,5 @@
 package com.github.pedrovgs.deeppanel
 
-import org.junit.Assert.*
 import org.junit.Test
 
 class ConnectedComponentLabelingTest {
@@ -78,5 +77,4 @@ class ConnectedComponentLabelingTest {
         }
         println()
     }
-
 }
