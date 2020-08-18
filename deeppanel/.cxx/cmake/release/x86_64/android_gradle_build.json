@@ -1,0 +1,43 @@
+{
+  "stringTable": {
+    "0": "/Users/pedro/Development/projects/DeepPanelAndroid/deeppanel/.cxx/cmake/release/x86_64",
+    "1": "--target=x86_64-none-linux-android21 --gcc-toolchain=/Users/pedro/Library/Android/sdk/ndk/21.0.6113669/toolchains/llvm/prebuilt/darwin-x86_64 --sysroot=/Users/pedro/Library/Android/sdk/ndk/21.0.6113669/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -Ddeep_panel_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security -O2 -DNDEBUG -fPIC"
+  },
+  "buildFiles": [
+    "/Users/pedro/Library/Android/sdk/ndk/21.0.6113669/build/cmake/android.toolchain.cmake",
+    "/Users/pedro/Development/projects/DeepPanelAndroid/deeppanel/src/main/cpp/CMakeLists.txt",
+    "/Users/pedro/Library/Android/sdk/ndk/21.0.6113669/build/cmake/platforms.cmake"
+  ],
+  "cleanCommands": [
+    "/Users/pedro/Library/Android/sdk/cmake/3.10.2.4988404/bin/ninja -C \"/Users/pedro/Development/projects/DeepPanelAndroid/deeppanel/.cxx/cmake/release/x86_64\" clean"
+  ],
+  "buildTargetsCommand": "/Users/pedro/Library/Android/sdk/cmake/3.10.2.4988404/bin/ninja  -C \"/Users/pedro/Development/projects/DeepPanelAndroid/deeppanel/.cxx/cmake/release/x86_64\" {LIST_OF_TARGETS_TO_BUILD}",
+  "libraries": {
+    "deep-panel-Release-x86_64": {
+      "buildCommand": "/Users/pedro/Library/Android/sdk/cmake/3.10.2.4988404/bin/ninja -C \"/Users/pedro/Development/projects/DeepPanelAndroid/deeppanel/.cxx/cmake/release/x86_64\" deep-panel",
+      "buildType": "release",
+      "toolchain": "171033014",
+      "abi": "x86_64",
+      "artifactName": "deep-panel",
+      "files": [
+        {
+          "src": "/Users/pedro/Development/projects/DeepPanelAndroid/deeppanel/src/main/cpp/deep-panel.cpp",
+          "flagsOrdinal": 1,
+          "workingDirectoryOrdinal": 0
+        }
+      ],
+      "headers": [],
+      "output": "/Users/pedro/Development/projects/DeepPanelAndroid/deeppanel/build/intermediates/cmake/release/obj/x86_64/libdeep-panel.so",
+      "runtimeFiles": []
+    }
+  },
+  "toolchains": {
+    "171033014": {
+      "cppCompilerExecutable": "/Users/pedro/Library/Android/sdk/ndk/21.0.6113669/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++"
+    }
+  },
+  "cFileExtensions": [],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}

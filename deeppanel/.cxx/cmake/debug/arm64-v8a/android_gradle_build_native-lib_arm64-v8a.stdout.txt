@@ -1,0 +1,2 @@
+ninja: Entering directory `/Users/pedro/Development/projects/DeepPanelAndroid/deeppanel/.cxx/cmake/debug/arm64-v8a'
+ninja: no work to do.

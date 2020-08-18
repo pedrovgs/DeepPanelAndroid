@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "/Users/pedro/Library/Android/sdk/ndk/21.0.6113669/build/cmake/android.toolchain.cmake",
+    "/Users/pedro/Development/projects/DeepPanelAndroid/deeppanel/src/main/cpp/CMakeLists.txt",
+    "/Users/pedro/Library/Android/sdk/ndk/21.0.6113669/build/cmake/platforms.cmake"
+  ],
+  "cleanCommands": [
+    "/Users/pedro/Library/Android/sdk/cmake/3.10.2.4988404/bin/ninja -C \"/Users/pedro/Development/projects/DeepPanelAndroid/deeppanel/.cxx/cmake/debug/x86\" clean"
+  ],
+  "buildTargetsCommand": "/Users/pedro/Library/Android/sdk/cmake/3.10.2.4988404/bin/ninja  -C \"/Users/pedro/Development/projects/DeepPanelAndroid/deeppanel/.cxx/cmake/debug/x86\" {LIST_OF_TARGETS_TO_BUILD}",
+  "libraries": {
+    "deep-panel-Debug-x86": {
+      "artifactName": "deep-panel",
+      "buildCommand": "/Users/pedro/Library/Android/sdk/cmake/3.10.2.4988404/bin/ninja -C \"/Users/pedro/Development/projects/DeepPanelAndroid/deeppanel/.cxx/cmake/debug/x86\" deep-panel",
+      "abi": "x86",
+      "output": "/Users/pedro/Development/projects/DeepPanelAndroid/deeppanel/build/intermediates/cmake/debug/obj/x86/libdeep-panel.so",
+      "runtimeFiles": []
+    }
+  }
+}

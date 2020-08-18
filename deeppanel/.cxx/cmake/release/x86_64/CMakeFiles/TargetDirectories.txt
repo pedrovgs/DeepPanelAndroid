@@ -1,0 +1,3 @@
+/Users/pedro/Development/projects/DeepPanelAndroid/deeppanel/.cxx/cmake/release/x86_64/CMakeFiles/rebuild_cache.dir
+/Users/pedro/Development/projects/DeepPanelAndroid/deeppanel/.cxx/cmake/release/x86_64/CMakeFiles/edit_cache.dir
+/Users/pedro/Development/projects/DeepPanelAndroid/deeppanel/.cxx/cmake/release/x86_64/CMakeFiles/deep-panel.dir

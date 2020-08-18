@@ -7,13 +7,13 @@ object ConnectedComponentLabeling {
     private const val firstLabelValue = 2
     private const val backgroundLabel = 1
 
-    fun findAreas(inputMatrix: Array<Array<Int>>): Array<Array<Int>> {
+    fun findAreas(inputMatrix: Array<IntArray>): Array<IntArray> {
         var currentLabel = firstLabelValue
         val imageSizeRange = inputMatrix.indices
         val parents = mutableMapOf<Int, MutableSet<Int>>()
         val imageSize = imageSizeRange.count()
         val labels = Array(imageSize) { i ->
-            Array(imageSize) { j ->
+            IntArray(imageSize) { j ->
                 if (inputMatrix[i][j] == 1) 1 else 0
             }
         }
@@ -70,9 +70,22 @@ object ConnectedComponentLabeling {
             "CCL FINISHED. Found $differentLabelsNumber different panels"
         )
         for (label in distinctLabels) {
-            Log.d("CCL", "Number of pixels with label $label == ${flattenedLabels.count { it == label }}")
+            Log.d(
+                "CCL",
+                "Number of pixels with label $label == ${flattenedLabels.count { it == label }}"
+            )
         }
         return labels
+    }
+
+    private fun Array<IntArray>.flatten(): List<Int> {
+        val result = mutableListOf(sumBy { it.size })
+        for (element in this) {
+            for (i in element) {
+                result.add(i)
+            }
+        }
+        return result
     }
 
     private fun printArray(result: Array<Array<Int>>) {
@@ -85,7 +98,7 @@ object ConnectedComponentLabeling {
         println()
     }
 
-    private fun findNeighbors(labeledPrediction: Array<Array<Int>>, i: Int, j: Int): List<Int> {
+    private fun findNeighbors(labeledPrediction: Array<IntArray>, i: Int, j: Int): List<Int> {
         val neighbors = mutableListOf<Int>()
         val maxValue = labeledPrediction.count()
         if (i > 0) {

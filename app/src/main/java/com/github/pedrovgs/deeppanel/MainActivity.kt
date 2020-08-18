@@ -30,12 +30,12 @@ class MainActivity : AppCompatActivity() {
             R.drawable.sample_page_10
         ).reversed()
         val size: Int = resList.size
-        findPanelsForPage(deepPanel, resList[currentPage % size])
-        //showPredictionForPage(deepPanel, resList[currentPage % size])
+        //findPanelsForPage(deepPanel, resList[currentPage % size])
+        showPredictionForPage(deepPanel, resList[currentPage % size])
         toolbar.setOnClickListener {
             currentPage += 1
-            findPanelsForPage(deepPanel, resList[currentPage % size])
-            //showPredictionForPage(deepPanel, resList[currentPage % size])
+            //findPanelsForPage(deepPanel, resList[currentPage % size])
+            showPredictionForPage(deepPanel, resList[currentPage % size])
         }
     }
 
@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
         val bitmapSamplePage = resources.getDrawable(pageResource, null).toBitmap()
         Thread {
             val initialTime = System.currentTimeMillis()
-            val predictionResult = deepPanel.extractPanelsInfo(bitmapSamplePage)
+            deepPanel.extractPanelsInfo(bitmapSamplePage)
             val now = System.currentTimeMillis()
             val timeElapsed = now - initialTime
             Log.d("DeepPanel", "Page analyzed")
@@ -63,8 +63,14 @@ class MainActivity : AppCompatActivity() {
         loading.visibility = View.VISIBLE
         val bitmapSamplePage = resources.getDrawable(pageResource, null).toBitmap()
         Thread {
+            val initialTime = System.currentTimeMillis()
             val result = deepPanel.extractDetailedPanelsInfo(bitmapSamplePage)
+            val now = System.currentTimeMillis()
+            val timeElapsed = now - initialTime
             image.post {
+                val message = "Page analyzed in $timeElapsed ms"
+                Log.d("DeepPanel", message)
+                Toast.makeText(loading.context, message, Toast.LENGTH_SHORT).show()
                 image.setImageBitmap(result.imageInput)
                 prediction.setImageBitmap(result.predictedBitmap)
                 mask.setImageBitmap(result.labeledAreasBitmap)

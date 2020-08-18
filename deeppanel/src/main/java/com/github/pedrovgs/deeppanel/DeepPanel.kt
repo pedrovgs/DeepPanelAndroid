@@ -21,11 +21,13 @@ class DeepPanel {
         private const val borderSize = 3
     }
 
+    private val ccl = NativeConnectedComponentLabeling()
     private lateinit var interpreter: Interpreter
 
     fun initialize(context: Context) {
         val model = loadModel(context)
         interpreter = Interpreter(model)
+        ccl.initialize()
     }
 
     fun extractPanelsInfo(bitmap: Bitmap): PredictionResult {
@@ -34,7 +36,7 @@ class DeepPanel {
         val prediction =
             Array(1) { Array(inputImageWidth) { Array(inputImageHeight) { FloatArray(3) } } }
         interpreter.run(modelInput, prediction)
-        val labeledPrediction = transformPredictionIntoLabels(prediction[0])
+        val labeledPrediction = ccl.transformPredictionIntoLabels(prediction[0])
         val connectedAreas = findPanels(labeledPrediction)
         val panels = extractPanelsInfo(connectedAreas)
         return PredictionResult(labeledPrediction, connectedAreas, panels)
@@ -46,7 +48,7 @@ class DeepPanel {
         val prediction =
             Array(1) { Array(inputImageWidth) { Array(inputImageHeight) { FloatArray(3) } } }
         interpreter.run(modelInput, prediction)
-        val labeledPrediction = transformPredictionIntoLabels(prediction[0])
+        val labeledPrediction = ccl.transformPredictionIntoLabels(prediction[0])
         val predictedBitmap = createBitmapFromPrediction(labeledPrediction)
         val connectedAreas = findPanels(labeledPrediction)
         val labeledAreasBitmap = createBitmapFromPrediction(connectedAreas)
@@ -89,7 +91,7 @@ class DeepPanel {
         return tempBitmap
     }
 
-    private fun extractPanelsInfo(labeledAreas: Array<Array<Int>>): Panels {
+    private fun extractPanelsInfo(labeledAreas: Array<IntArray>): Panels {
         val allLabels = labeledAreas.flatten().distinct()
         Log.d("DeepPanel", "Number of different areas = ${allLabels.count()}")
         allLabels.forEach { label ->
@@ -137,16 +139,14 @@ class DeepPanel {
         })
     }
 
-    private fun findPanels(labeledPrediction: Array<Array<Int>>): Array<Array<Int>> {
-        // val rawAreas = CCL.twoPass(labeledPrediction)
+    private fun findPanels(labeledPrediction: Array<IntArray>): Array<IntArray> {
         val rawAreas = ConnectedComponentLabeling.findAreas(labeledPrediction)
         val fixedAreas = removeSmallAreas(rawAreas)
-        val normalizedAreas = normalizeAreas(fixedAreas)
-        return normalizedAreas
+        return normalizeAreas(fixedAreas)
     }
 
-    private fun normalizeAreas(areas: Array<Array<Int>>): Array<Array<Int>> {
-        val normalizedAreas = Array(inputImageWidth) { Array(inputImageHeight) { 0 } }
+    private fun normalizeAreas(areas: Array<IntArray>): Array<IntArray> {
+        val normalizedAreas = Array(inputImageWidth) { IntArray(inputImageHeight) }
         val labelsUsed = mutableMapOf<Int, Int>()
         var currentNormalizedLabel = 2
         for (x in 0 until inputImageWidth) {
@@ -169,10 +169,20 @@ class DeepPanel {
         return normalizedAreas
     }
 
-    private fun removeSmallAreas(rawAreas: Array<Array<Int>>): Array<Array<Int>> {
+    private fun Array<IntArray>.flatten(): List<Int> {
+        val result = mutableListOf(sumBy { it.size })
+        for (element in this) {
+            for (i in element) {
+                result.add(i)
+            }
+        }
+        return result
+    }
+
+    private fun removeSmallAreas(rawAreas: Array<IntArray>): Array<IntArray> {
         val flattenedLabels = rawAreas.flatten()
         val minimumAreaAllowed = inputImageWidth * inputImageHeight * 0.01
-        val fixedAreas = Array(inputImageWidth) { Array(inputImageHeight) { 0 } }
+        val fixedAreas = Array(inputImageWidth) { IntArray(inputImageHeight) }
         for (x in 0 until inputImageWidth) {
             for (y in 0 until inputImageHeight) {
                 val rawPixelLabel = rawAreas[x][y]
@@ -244,29 +254,7 @@ class DeepPanel {
         return imgData
     }
 
-    private fun transformPredictionIntoLabels(prediction: Array<Array<FloatArray>>): Array<Array<Int>> {
-        val labeledPrediction = Array(224) { Array(224) { 0 } }
-        for (i in 0 until 224) {
-            for (j in 0 until 224) {
-                // This change in the index usage is needed because the input of the model
-                // is turned 90 degress to the left
-                val pixel = prediction[j][i]
-                val background = pixel[0]
-                val border = pixel[1]
-                val content = pixel[2]
-                if (background >= content && background >= border) {
-                    labeledPrediction[i][j] = 0
-                } else if (border >= background && border >= content) {
-                    labeledPrediction[i][j] = 1
-                } else if (content >= background && content >= border) {
-                    labeledPrediction[i][j] = 2
-                }
-            }
-        }
-        return labeledPrediction
-    }
-
-    private fun createBitmapFromPrediction(prediction: Array<Array<Int>>): Bitmap {
+    private fun createBitmapFromPrediction(prediction: Array<IntArray>): Bitmap {
         val imageSize = 224
         val bitmap = Bitmap.createBitmap(imageSize, imageSize, Bitmap.Config.ARGB_8888)
         for (x in 0 until imageSize) {
@@ -299,7 +287,7 @@ class DeepPanel {
     }
 }
 
-typealias Prediction = Array<Array<Int>>
+typealias Prediction = Array<IntArray>
 
 data class PredictionResult(
     val prediction: Prediction,
