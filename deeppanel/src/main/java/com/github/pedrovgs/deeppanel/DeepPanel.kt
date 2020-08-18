@@ -43,17 +43,23 @@ class DeepPanel {
     }
 
     fun extractDetailedPanelsInfo(bitmap: Bitmap): DetailedPredictionResult {
-        val resizedImage = resizeInput(bitmap)
-        val modelInput = convertBitmapToByteBuffer(resizedImage)
+        val resizedImage = logExecutionTime("Resize input") { resizeInput(bitmap) }
+        val modelInput = logExecutionTime("Resized bitmap to model input") {
+            convertBitmapToByteBuffer(resizedImage)
+        }
         val prediction =
             Array(1) { Array(inputImageWidth) { Array(inputImageHeight) { FloatArray(3) } } }
-        interpreter.run(modelInput, prediction)
-        val labeledPrediction = ccl.transformPredictionIntoLabels(prediction[0])
-        val predictedBitmap = createBitmapFromPrediction(labeledPrediction)
-        val connectedAreas = findPanels(labeledPrediction)
-        val labeledAreasBitmap = createBitmapFromPrediction(connectedAreas)
-        val panels = extractPanelsInfo(connectedAreas)
-        val panelsBitmap = generatePanelsBitmap(resizedImage, panels)
+        logExecutionTime("Evaluate model") { interpreter.run(modelInput, prediction) }
+        val labeledPrediction =
+            logExecutionTime("Pred to labels") { ccl.transformPredictionIntoLabels(prediction[0]) }
+        val predictedBitmap =
+            logExecutionTime("Bitmap from labels") { createBitmapFromPrediction(labeledPrediction) }
+        val connectedAreas = logExecutionTime("CCL implemenation") { findPanels(labeledPrediction) }
+        val labeledAreasBitmap =
+            logExecutionTime("Bitmap from areas") { createBitmapFromPrediction(connectedAreas) }
+        val panels = logExecutionTime("Extract panels info") { extractPanelsInfo(connectedAreas) }
+        val panelsBitmap =
+            logExecutionTime("Bitmap from panels") { generatePanelsBitmap(resizedImage, panels) }
         return DetailedPredictionResult(
             bitmap,
             resizedImage,
@@ -285,6 +291,15 @@ class DeepPanel {
         12 -> Color.parseColor("#a3560d")
         else -> Color.WHITE
     }
+}
+
+private fun <T> logExecutionTime(name: String, lambda: () -> T): T {
+    val init = System.currentTimeMillis()
+    val result = lambda()
+    val now = System.currentTimeMillis()
+    val time = now - init
+    Log.d("DeepPanel", "Time needed for $name = $time ms")
+    return result
 }
 
 typealias Prediction = Array<IntArray>

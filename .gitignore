@@ -81,3 +81,7 @@ sdcard.img.qcow2
 *.project
 *.classpath
 *.settings
+
+# NDK
+
+/deeppanel/.cxx/
