@@ -28,7 +28,19 @@ class DeepPanel {
         interpreter = Interpreter(model)
     }
 
-    fun extractPanels(bitmap: Bitmap): PredictionResult {
+    fun extractPanelsInfo(bitmap: Bitmap): PredictionResult {
+        val resizedImage = resizeInput(bitmap)
+        val modelInput = convertBitmapToByteBuffer(resizedImage)
+        val prediction =
+            Array(1) { Array(inputImageWidth) { Array(inputImageHeight) { FloatArray(3) } } }
+        interpreter.run(modelInput, prediction)
+        val labeledPrediction = transformPredictionIntoLabels(prediction[0])
+        val connectedAreas = findPanels(labeledPrediction)
+        val panels = extractPanelsInfo(connectedAreas)
+        return PredictionResult(labeledPrediction, connectedAreas, panels)
+    }
+
+    fun extractDetailedPanelsInfo(bitmap: Bitmap): DetailedPredictionResult {
         val resizedImage = resizeInput(bitmap)
         val modelInput = convertBitmapToByteBuffer(resizedImage)
         val prediction =
@@ -36,19 +48,17 @@ class DeepPanel {
         interpreter.run(modelInput, prediction)
         val labeledPrediction = transformPredictionIntoLabels(prediction[0])
         val predictedBitmap = createBitmapFromPrediction(labeledPrediction)
-        val labeledAreas = findPanels(labeledPrediction)
-        val labeledAreasBitmap = createBitmapFromPrediction(labeledAreas)
-        val panels = extractPanelsInfo(labeledAreas)
+        val connectedAreas = findPanels(labeledPrediction)
+        val labeledAreasBitmap = createBitmapFromPrediction(connectedAreas)
+        val panels = extractPanelsInfo(connectedAreas)
         val panelsBitmap = generatePanelsBitmap(resizedImage, panels)
-        return PredictionResult(
+        return DetailedPredictionResult(
             bitmap,
             resizedImage,
-            labeledPrediction,
             predictedBitmap,
-            labeledAreas,
             labeledAreasBitmap,
-            panels,
-            panelsBitmap
+            panelsBitmap,
+            PredictionResult(labeledPrediction, connectedAreas, panels)
         )
     }
 
@@ -113,7 +123,6 @@ class DeepPanel {
             }
         }
         return Panels(borderInfo.mapIndexed { index, borderInfoPerLabel ->
-            Log.d("DeepPanel", "====> ")
             val minX = max(borderInfoPerLabel[0] - borderSize, 0)
             val maxX = min(borderInfoPerLabel[1] + borderSize, inputImageHeight)
             val minY = max(borderInfoPerLabel[2] - borderSize, 0)
@@ -293,12 +302,16 @@ class DeepPanel {
 typealias Prediction = Array<Array<Int>>
 
 data class PredictionResult(
+    val prediction: Prediction,
+    val connectedAreas: Prediction,
+    val panels: Panels
+)
+
+data class DetailedPredictionResult(
     val imageInput: Bitmap,
     val resizedImage: Bitmap,
-    val prediction: Prediction,
     val predictedBitmap: Bitmap,
-    val labeledAreas: Prediction,
     val labeledAreasBitmap: Bitmap,
-    val panels: Panels,
-    val panelsBitmap: Bitmap
+    val panelsBitmap: Bitmap,
+    val predictionResult: PredictionResult
 )

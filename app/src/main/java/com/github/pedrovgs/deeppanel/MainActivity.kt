@@ -3,6 +3,7 @@ package com.github.pedrovgs.deeppanel
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toBitmap
 import kotlinx.android.synthetic.main.activity_main.*
@@ -29,18 +30,40 @@ class MainActivity : AppCompatActivity() {
             R.drawable.sample_page_10
         ).reversed()
         val size: Int = resList.size
-        showPredictionForPage(deepPanel, resList[currentPage % size])
+        findPanelsForPage(deepPanel, resList[currentPage % size])
+        //showPredictionForPage(deepPanel, resList[currentPage % size])
         toolbar.setOnClickListener {
             currentPage += 1
-            showPredictionForPage(deepPanel, resList[currentPage % size])
+            findPanelsForPage(deepPanel, resList[currentPage % size])
+            //showPredictionForPage(deepPanel, resList[currentPage % size])
         }
+    }
+
+    private fun findPanelsForPage(deepPanel: DeepPanel, pageResource: Int) {
+        Log.d("DeepPanel", "Initializing page analysis")
+        container.visibility = View.INVISIBLE
+        loading.visibility = View.VISIBLE
+        val bitmapSamplePage = resources.getDrawable(pageResource, null).toBitmap()
+        Thread {
+            val initialTime = System.currentTimeMillis()
+            val predictionResult = deepPanel.extractPanelsInfo(bitmapSamplePage)
+            val now = System.currentTimeMillis()
+            val timeElapsed = now - initialTime
+            Log.d("DeepPanel", "Page analyzed")
+            container.post {
+                val message = "Page analyzed in $timeElapsed ms"
+                Log.d("DeepPanel", message)
+                Toast.makeText(loading.context, message, Toast.LENGTH_SHORT).show()
+                loading.visibility = View.GONE
+            }
+        }.start()
     }
 
     private fun showPredictionForPage(deepPanel: DeepPanel, pageResource: Int) {
         loading.visibility = View.VISIBLE
         val bitmapSamplePage = resources.getDrawable(pageResource, null).toBitmap()
         Thread {
-            val result = deepPanel.extractPanels(bitmapSamplePage)
+            val result = deepPanel.extractDetailedPanelsInfo(bitmapSamplePage)
             image.post {
                 image.setImageBitmap(result.imageInput)
                 prediction.setImageBitmap(result.predictedBitmap)
@@ -58,11 +81,6 @@ class MainActivity : AppCompatActivity() {
                 panelsInfo.setOnClickListener {
                     FullScreenImageActivity.open(this, result.panelsBitmap)
                 }
-                Log.d("DeepPanel", "Misunsi =====> ")
-                result.panels.panelsInfo.forEach {
-                    Log.d("DeepPanel", "=====> $it")
-                }
-                Log.d("DeepPanel", "Misunsi =====> ")
                 loading.visibility = View.GONE
             }
         }.start()
