@@ -3,6 +3,7 @@ package com.github.pedrovgs.deeppanel
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toBitmap
 import kotlinx.android.synthetic.main.activity_main.*
@@ -40,8 +41,14 @@ class MainActivity : AppCompatActivity() {
         loading.visibility = View.VISIBLE
         val bitmapSamplePage = resources.getDrawable(pageResource, null).toBitmap()
         Thread {
+            val initialTime = System.currentTimeMillis()
             val result = deepPanel.extractPanels(bitmapSamplePage)
+            val now = System.currentTimeMillis()
+            val timeElapsed = now - initialTime
             image.post {
+                val message = "Page analyzed in $timeElapsed ms"
+                Log.d("DeepPanel", message)
+                Toast.makeText(loading.context, message, Toast.LENGTH_SHORT).show()
                 image.setImageBitmap(result.imageInput)
                 prediction.setImageBitmap(result.predictedBitmap)
                 mask.setImageBitmap(result.labeledAreasBitmap)
@@ -58,11 +65,6 @@ class MainActivity : AppCompatActivity() {
                 panelsInfo.setOnClickListener {
                     FullScreenImageActivity.open(this, result.panelsBitmap)
                 }
-                Log.d("DeepPanel", "Misunsi =====> ")
-                result.panels.panelsInfo.forEach {
-                    Log.d("DeepPanel", "=====> $it")
-                }
-                Log.d("DeepPanel", "Misunsi =====> ")
                 loading.visibility = View.GONE
             }
         }.start()
