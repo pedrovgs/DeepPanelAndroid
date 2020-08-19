@@ -1,5 +1,6 @@
 #include <jni.h>
 #include <string>
+#import "connected-components.cpp"
 
 jint mapPredictedRowToLabel(JNIEnv *env, jobjectArray prediction, int i, int j) {
     auto x = (jobjectArray) env->GetObjectArrayElement(prediction, i);
@@ -37,14 +38,15 @@ Java_com_github_pedrovgs_deeppanel_NativeConnectedComponentLabeling_transformPre
     jsize width = env->GetArrayLength(prediction);
     jsize height = env->GetArrayLength(firstItem);
     int **labeledMatrix;
-    labeledMatrix = new int *[width];
+    labeledMatrix = new int *[height];
     for (int i = 0; i < width; i++) {
-        labeledMatrix[i] = new int[height];
+        labeledMatrix[i] = new int[width];
         for (int j = 0; j < height; j++) {
             labeledMatrix[i][j] = mapPredictedRowToLabel(env, prediction, j, i);
         }
     }
-    jobjectArray javaIntsArray = intArrayToJavaIntArray(env, labeledMatrix, width, height);
+    int **connectedComponentsMatrix = find_components(labeledMatrix, width, height);
+    jobjectArray javaIntsArray = intArrayToJavaIntArray(env, connectedComponentsMatrix, width, height);
     return javaIntsArray;
 }
 

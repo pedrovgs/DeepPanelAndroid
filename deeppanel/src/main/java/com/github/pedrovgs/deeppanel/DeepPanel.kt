@@ -54,7 +54,7 @@ class DeepPanel {
             logExecutionTime("Pred to labels") { ccl.transformPredictionIntoLabels(prediction[0]) }
         val predictedBitmap =
             logExecutionTime("Bitmap from labels") { createBitmapFromPrediction(labeledPrediction) }
-        val connectedAreas = logExecutionTime("CCL implemenation") { findPanels(labeledPrediction) }
+        val connectedAreas = logExecutionTime("CCL implemenation") { labeledPrediction }
         val labeledAreasBitmap =
             logExecutionTime("Bitmap from areas") { createBitmapFromPrediction(connectedAreas) }
         val panels = logExecutionTime("Extract panels info") { extractPanelsInfo(connectedAreas) }
