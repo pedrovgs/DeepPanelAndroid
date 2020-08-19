@@ -17,6 +17,17 @@ jint mapPredictedRowToLabel(JNIEnv *env, jobjectArray prediction, int i, int j) 
     }
 }
 
+jobjectArray intArrayToJavaIntArray(JNIEnv *env, int **matrix, int width, int height) {
+    jclass intArrayCLass = env->FindClass("[I");
+    jobjectArray labelsArray = env->NewObjectArray(width, intArrayCLass, nullptr);
+    for (int i = 0; i < width; i++) {
+        jintArray intArray = env->NewIntArray(height);
+        env->SetIntArrayRegion(intArray, 0, height, matrix[i]);
+        env->SetObjectArrayElement(labelsArray, i, intArray);
+    }
+    return labelsArray;
+}
+
 extern "C" JNIEXPORT jobjectArray JNICALL
 Java_com_github_pedrovgs_deeppanel_NativeConnectedComponentLabeling_transformPredictionIntoLabels
         (
@@ -25,17 +36,16 @@ Java_com_github_pedrovgs_deeppanel_NativeConnectedComponentLabeling_transformPre
     auto firstItem = (jobjectArray) env->GetObjectArrayElement(prediction, 0);
     jsize width = env->GetArrayLength(prediction);
     jsize height = env->GetArrayLength(firstItem);
-    jclass intArrayCLass = env->FindClass("[I");
-    jobjectArray labelsArray = env->NewObjectArray(width, intArrayCLass, NULL);
+    int **labeledMatrix;
+    labeledMatrix = new int *[width];
     for (int i = 0; i < width; i++) {
-        jintArray intArray = env->NewIntArray(height);
-        jint labelsArrayPerRow[height];
+        labeledMatrix[i] = new int[height];
         for (int j = 0; j < height; j++) {
-            labelsArrayPerRow[j] = mapPredictedRowToLabel(env, prediction, i, j);
+            labeledMatrix[i][j] = mapPredictedRowToLabel(env, prediction, j, i);
         }
-        env->SetIntArrayRegion(intArray, 0, height, labelsArrayPerRow);
-        env->SetObjectArrayElement(labelsArray, i, intArray);
     }
-    return labelsArray;
+    jobjectArray javaIntsArray = intArrayToJavaIntArray(env, labeledMatrix, width, height);
+    return javaIntsArray;
 }
+
 
