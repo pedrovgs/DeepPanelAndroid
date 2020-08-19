@@ -6,8 +6,12 @@ void depth_first_search(int **connected_components, int x, int y, int current_la
     if (x < 0 || x == width) return;
     if (y < 0 || y == height) return;
     int current_item = matrix[x][y];
-    if (connected_components[x][y] || current_item > 1)
-        return; // already labeled
+    if (connected_components[x][y])  // already labeled
+        return;
+    if (current_item > 1) { // border marked as labeled with the border value
+        connected_components[x][y] = 1;
+        return;
+    }
 
     // mark the current cell
     connected_components[x][y] = current_label;
@@ -18,7 +22,7 @@ void depth_first_search(int **connected_components, int x, int y, int current_la
 }
 
 int **find_components(int **matrix, int width, int height) {
-    int **connected_components = 0;
+    int **connected_components = nullptr;
     connected_components = new int *[height];
     int initial_label = 1;
     for (int i = 0; i < width; ++i) {

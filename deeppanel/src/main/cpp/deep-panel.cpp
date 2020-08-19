@@ -1,5 +1,4 @@
 #include <jni.h>
-#include <string>
 #import "connected-components.cpp"
 
 jint mapPredictedRowToLabel(JNIEnv *env, jobjectArray prediction, int i, int j) {
