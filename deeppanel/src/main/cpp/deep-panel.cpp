@@ -56,10 +56,10 @@ extract_panels_data(ConnectedComponentResult connected_components_result, int wi
     int *min_y_values = new int[number_of_panels + 1];
     int *max_y_values = new int[number_of_panels + 1];
     for (int i = 0; i < number_of_panels + 1; i++) {
-        min_x_values[i] = 0;
-        max_x_values[i] = 0;
-        min_y_values[i] = 0;
-        max_y_values[i] = 0;
+        min_x_values[i] = INT_MAX;
+        max_x_values[i] = INT_MIN;
+        min_y_values[i] = INT_MAX;
+        max_y_values[i] = INT_MIN;
     }
     int **cluster_matrix = connected_components_result.clusters_matrix;
     for (int i = 0; i < width; i++)
