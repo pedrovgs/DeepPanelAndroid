@@ -94,7 +94,8 @@ Java_com_github_pedrovgs_deeppanel_NativeDeepPanel_extractPanelsInfo
             // j and i indexes order is changed on purpose because the original matrix
             // is rotated when reading the values.
             // TODO: Fix weird error here returning a null row randomly "map_predicted_row_to_label"
-            // should be broken.
+            // should be broken. Maybe it is related to the image size. When using a 6k px height
+            // bitmap error was easier to reproduce.
             labeled_matrix[i][j] = map_predicted_row_to_label(env, prediction, j, i);
         }
     }
