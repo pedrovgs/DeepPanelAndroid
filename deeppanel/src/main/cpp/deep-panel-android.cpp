@@ -48,8 +48,8 @@ Java_com_github_pedrovgs_deeppanel_NativeConnectedComponentLabeling_transformPre
             labeled_matrix[i][j] = map_predicted_row_to_label(env, prediction, j, i);
         }
     }
-    ConnectedComponentResult result = extract_panels_info(labeled_matrix, width, height);
-    int **connectedComponentsMatrix = result.clusters_matrix;
+    DeepPanelResult result = extract_panels_info(labeled_matrix, width, height);
+    int **connectedComponentsMatrix = result.connected_components.clusters_matrix;
     jobjectArray java_ints_array = intArrayToJavaIntArray(env, connectedComponentsMatrix, width,
                                                           height);
     return java_ints_array;
