@@ -1,7 +1,6 @@
 #include <cstdlib>
 #include <cassert>
 
-
 class ConnectedComponentResult {
 public:
     int total_clusters;
@@ -9,7 +8,9 @@ public:
     int *pixels_per_labels;
 };
 
-/* Implementation of Union-Find Algorithm */
+/* Implementation of Union-Find Algorithm and Hoshen Kopelman Algorithm (aka Connected Component Labeling).
+ * You can find the reference implementation here: https://www.ocf.berkeley.edu/~fricke/projects/hoshenkopelman/hk.c.
+ * Useful info about this algorithm can be found here: https://www.ocf.berkeley.edu/~fricke/projects/hoshenkopelman/hoshenkopelman.html*/
 
 /* The 'labels' array has the meaning that labels[x] is an alias for the label x; by
    following this chain until x == labels[x], you can find the canonical name of an
@@ -110,7 +111,7 @@ ConnectedComponentResult find_components(int **matrix, int m, int n) {
     int *new_labels = static_cast<int *>(calloc(n_labels,
                                                 sizeof(int))); // allocate array, initialized to zero
     int *pixels_per_label = static_cast<int *>(calloc(n_labels,
-                                                sizeof(int))); // allocate array, initialized to zero
+                                                      sizeof(int))); // allocate array, initialized to zero
     for (int j = 0; j < n; j++)
         for (int i = 0; i < m; i++)
             if (matrix[i][j]) {
