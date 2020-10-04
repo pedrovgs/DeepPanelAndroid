@@ -1,54 +1,30 @@
-#include <jni.h>
-#import "connected-components.cpp"
 
-jint mapPredictedRowToLabel(JNIEnv *env, jobjectArray prediction, int i, int j) {
-    auto x = (jobjectArray) env->GetObjectArrayElement(prediction, i);
-    auto y = (jfloatArray) env->GetObjectArrayElement(x, j);
-    jfloat *pixelPrediction = env->GetFloatArrayElements(y, 0);
-    jfloat background = pixelPrediction[0];
-    jfloat border = pixelPrediction[1];
-    jfloat content = pixelPrediction[2];
-    if (background >= content && background > border) {
-        return 0;
-    } else if (border >= background && border >= content) {
-        return 0;//Just to try if ccl is working fine
-    } else {
-        return 1;//Just to try if ccl is working fine
-    }
-}
-
-jobjectArray intArrayToJavaIntArray(JNIEnv *env, int **matrix, int width, int height) {
-    jclass intArrayCLass = env->FindClass("[I");
-    jobjectArray labelsArray = env->NewObjectArray(width, intArrayCLass, nullptr);
-    for (int i = 0; i < width; i++) {
-        jintArray intArray = env->NewIntArray(height);
-        env->SetIntArrayRegion(intArray, 0, height, matrix[i]);
-        env->SetObjectArrayElement(labelsArray, i, intArray);
-    }
-    return labelsArray;
-}
-
-extern "C" JNIEXPORT jobjectArray JNICALL
-Java_com_github_pedrovgs_deeppanel_NativeConnectedComponentLabeling_transformPredictionIntoLabels
-        (
-                JNIEnv *env,
-                jobject /* this */, jobjectArray prediction) {
-    auto firstItem = (jobjectArray) env->GetObjectArrayElement(prediction, 0);
-    jsize width = env->GetArrayLength(prediction);
-    jsize height = env->GetArrayLength(firstItem);
-    int **labeledMatrix;
-    labeledMatrix = new int *[height];
-    for (int i = 0; i < width; i++) {
-        labeledMatrix[i] = new int[width];
+ConnectedComponentResult remove_small_areas_and_recover_border(
+        ConnectedComponentResult connectedComponentResult,
+        int width,
+        int height) {
+    int new_total_clusters = connectedComponentResult.total_clusters;
+    int **clusters_matrix = connectedComponentResult.clusters_matrix;
+    int *pixels_per_labels = connectedComponentResult.pixels_per_labels;
+    bool *label_removed = new bool[width * height];
+    int minimumAreaAllowed = width * height * 0.03;
+    for (int i = 0; i < width; i++)
         for (int j = 0; j < height; j++) {
-            // j and i indexes order is changed on purpose because the original matrix
-            // is rotated when reading the values.
-            labeledMatrix[i][j] = mapPredictedRowToLabel(env, prediction, j, i);
+            int label = clusters_matrix[i][j];
+            if (label != 0) {
+                int pixelsPerLabel = pixels_per_labels[label];
+                if (pixelsPerLabel < minimumAreaAllowed) {
+                    clusters_matrix[i][j] = 0;
+                    if (!label_removed[label]) {
+                        new_total_clusters--;
+                        label_removed[label] = true;
+                    }
+                }
+            }
         }
-    }
-    int **connectedComponentsMatrix = find_components(labeledMatrix, width, height);
-    jobjectArray javaIntsArray = intArrayToJavaIntArray(env, connectedComponentsMatrix, width, height);
-    return javaIntsArray;
+    ConnectedComponentResult result;
+    result.clusters_matrix = clusters_matrix;
+    result.total_clusters = new_total_clusters;
+    result.pixels_per_labels = pixels_per_labels;
+    return result;
 }
-
-

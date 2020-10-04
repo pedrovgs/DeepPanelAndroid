@@ -93,6 +93,9 @@ class DeepPanel {
     }
 
     private fun extractPanelsInfo(labeledAreas: Array<IntArray>): Panels {
+        if (true) { //TODO: Remove this hack to avoid crash temporally
+            return Panels(listOf())
+        }
         val allLabels = labeledAreas.flatten().distinct()
         Log.d("DeepPanel", "Number of different areas = ${allLabels.count()}")
         allLabels.forEach { label ->
