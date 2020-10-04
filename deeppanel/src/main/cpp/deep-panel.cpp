@@ -11,9 +11,9 @@ jint mapPredictedRowToLabel(JNIEnv *env, jobjectArray prediction, int i, int j) 
     if (background >= content && background > border) {
         return 0;
     } else if (border >= background && border >= content) {
-        return 1;
+        return 0;//Just to try if ccl is working fine
     } else {
-        return 2;
+        return 1;//Just to try if ccl is working fine
     }
 }
 
