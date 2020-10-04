@@ -32,7 +32,7 @@ jobjectArray intArrayToJavaIntArray(JNIEnv *env, int **matrix, int width, int he
 }
 
 extern "C" JNIEXPORT jobjectArray JNICALL
-Java_com_github_pedrovgs_deeppanel_NativeConnectedComponentLabeling_transformPredictionIntoLabels
+Java_com_github_pedrovgs_deeppanel_NativeDeepPanel_extractPanelsInfo
         (
                 JNIEnv *env,
                 jobject /* this */, jobjectArray prediction) {

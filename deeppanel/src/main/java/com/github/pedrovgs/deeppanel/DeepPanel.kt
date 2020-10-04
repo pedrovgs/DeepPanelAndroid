@@ -21,7 +21,7 @@ class DeepPanel {
         private const val borderSize = 3
     }
 
-    private val ccl = NativeConnectedComponentLabeling()
+    private val ccl = NativeDeepPanel()
     private lateinit var interpreter: Interpreter
 
     fun initialize(context: Context) {
@@ -36,7 +36,7 @@ class DeepPanel {
         val prediction =
             Array(1) { Array(inputImageWidth) { Array(inputImageHeight) { FloatArray(3) } } }
         interpreter.run(modelInput, prediction)
-        val connectedAreas = ccl.transformPredictionIntoLabels(prediction[0])
+        val connectedAreas = ccl.extractPanelsInfo(prediction[0])
         //val connectedAreas = findPanels(labeledPrediction)
         val panels = extractPanelsInfo(connectedAreas)
         return PredictionResult(connectedAreas, panels)
@@ -50,7 +50,7 @@ class DeepPanel {
         val prediction =
             Array(1) { Array(inputImageWidth) { Array(inputImageHeight) { FloatArray(3) } } }
         logExecutionTime("Evaluate model") { interpreter.run(modelInput, prediction) }
-        val connectedAreas = logExecutionTime("C++ code") { ccl.transformPredictionIntoLabels(prediction[0]) }
+        val connectedAreas = logExecutionTime("C++ code") { ccl.extractPanelsInfo(prediction[0]) }
         val labeledAreasBitmap =
             logExecutionTime("Bitmap from areas") { createBitmapFromPrediction(connectedAreas) }
         val panels = logExecutionTime("Extract panels info") { extractPanelsInfo(connectedAreas) }
