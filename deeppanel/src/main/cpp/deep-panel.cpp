@@ -41,6 +41,8 @@ Java_com_github_pedrovgs_deeppanel_NativeConnectedComponentLabeling_transformPre
     for (int i = 0; i < width; i++) {
         labeledMatrix[i] = new int[width];
         for (int j = 0; j < height; j++) {
+            // j and i indexes order is changed on purpose because the original matrix
+            // is rotated when reading the values.
             labeledMatrix[i][j] = mapPredictedRowToLabel(env, prediction, j, i);
         }
     }

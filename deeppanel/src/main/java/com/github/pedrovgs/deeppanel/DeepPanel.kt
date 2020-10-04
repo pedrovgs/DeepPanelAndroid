@@ -37,9 +37,9 @@ class DeepPanel {
             Array(1) { Array(inputImageWidth) { Array(inputImageHeight) { FloatArray(3) } } }
         interpreter.run(modelInput, prediction)
         val labeledPrediction = ccl.transformPredictionIntoLabels(prediction[0])
-        val connectedAreas = findPanels(labeledPrediction)
-        val panels = extractPanelsInfo(connectedAreas)
-        return PredictionResult(labeledPrediction, connectedAreas, panels)
+        //val connectedAreas = findPanels(labeledPrediction)
+        val panels = extractPanelsInfo(labeledPrediction)
+        return PredictionResult(labeledPrediction, labeledPrediction, panels)
     }
 
     fun extractDetailedPanelsInfo(bitmap: Bitmap): DetailedPredictionResult {
