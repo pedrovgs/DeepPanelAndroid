@@ -19,8 +19,13 @@ ConnectedComponentResult remove_small_areas_and_recover_border(
     int new_total_clusters = connected_component_result.total_clusters;
     int **clusters_matrix = connected_component_result.clusters_matrix;
     int *pixels_per_labels = connected_component_result.pixels_per_labels;
-    bool *label_removed = new bool[width * height];
-    int min_allowed_area = width * height * 0.03;
+    int image_size = width * height;
+    int max_allowed_different_clusters = 2000;
+    bool *label_removed = new bool[max_allowed_different_clusters];
+    for (int i = 0; i < image_size; i++) {
+        label_removed[i] = false;
+    }
+    int min_allowed_area = image_size * 0.03;
     for (int i = 0; i < width; i++)
         for (int j = 0; j < height; j++) {
             int label = clusters_matrix[i][j];
