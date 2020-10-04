@@ -36,10 +36,10 @@ class DeepPanel {
         val prediction =
             Array(1) { Array(inputImageWidth) { Array(inputImageHeight) { FloatArray(3) } } }
         interpreter.run(modelInput, prediction)
-        val labeledPrediction = ccl.transformPredictionIntoLabels(prediction[0])
+        val connectedAreas = ccl.transformPredictionIntoLabels(prediction[0])
         //val connectedAreas = findPanels(labeledPrediction)
-        val panels = extractPanelsInfo(labeledPrediction)
-        return PredictionResult(labeledPrediction, labeledPrediction, panels)
+        val panels = extractPanelsInfo(connectedAreas)
+        return PredictionResult(connectedAreas, panels)
     }
 
     fun extractDetailedPanelsInfo(bitmap: Bitmap): DetailedPredictionResult {
@@ -50,11 +50,7 @@ class DeepPanel {
         val prediction =
             Array(1) { Array(inputImageWidth) { Array(inputImageHeight) { FloatArray(3) } } }
         logExecutionTime("Evaluate model") { interpreter.run(modelInput, prediction) }
-        val labeledPrediction =
-            logExecutionTime("Pred to labels") { ccl.transformPredictionIntoLabels(prediction[0]) }
-        val predictedBitmap =
-            logExecutionTime("Bitmap from labels") { createBitmapFromPrediction(labeledPrediction) }
-        val connectedAreas = logExecutionTime("CCL implemenation") { labeledPrediction }
+        val connectedAreas = logExecutionTime("C++ code") { ccl.transformPredictionIntoLabels(prediction[0]) }
         val labeledAreasBitmap =
             logExecutionTime("Bitmap from areas") { createBitmapFromPrediction(connectedAreas) }
         val panels = logExecutionTime("Extract panels info") { extractPanelsInfo(connectedAreas) }
@@ -63,10 +59,9 @@ class DeepPanel {
         return DetailedPredictionResult(
             bitmap,
             resizedImage,
-            predictedBitmap,
             labeledAreasBitmap,
             panelsBitmap,
-            PredictionResult(labeledPrediction, connectedAreas, panels)
+            PredictionResult(connectedAreas, panels)
         )
     }
 
@@ -145,36 +140,6 @@ class DeepPanel {
         })
     }
 
-    private fun findPanels(labeledPrediction: Array<IntArray>): Array<IntArray> {
-        val rawAreas = ConnectedComponentLabeling.findAreas(labeledPrediction)
-        val fixedAreas = removeSmallAreas(rawAreas)
-        return normalizeAreas(fixedAreas)
-    }
-
-    private fun normalizeAreas(areas: Array<IntArray>): Array<IntArray> {
-        val normalizedAreas = Array(inputImageWidth) { IntArray(inputImageHeight) }
-        val labelsUsed = mutableMapOf<Int, Int>()
-        var currentNormalizedLabel = 2
-        for (x in 0 until inputImageWidth) {
-            for (y in 0 until inputImageHeight) {
-                val rawLabel = areas[x][y]
-                if (rawLabel <= 1) {
-                    normalizedAreas[x][y] = rawLabel
-                } else {
-                    val normalizedLabelForRawLabel = labelsUsed[rawLabel]
-                    if (normalizedLabelForRawLabel == null) {
-                        normalizedAreas[x][y] = currentNormalizedLabel
-                        labelsUsed[rawLabel] = currentNormalizedLabel
-                        currentNormalizedLabel++
-                    } else {
-                        normalizedAreas[x][y] = normalizedLabelForRawLabel
-                    }
-                }
-            }
-        }
-        return normalizedAreas
-    }
-
     private fun Array<IntArray>.flatten(): List<Int> {
         val result = mutableListOf(sumBy { it.size })
         for (element in this) {
@@ -183,32 +148,6 @@ class DeepPanel {
             }
         }
         return result
-    }
-
-    private fun removeSmallAreas(rawAreas: Array<IntArray>): Array<IntArray> {
-        val flattenedLabels = rawAreas.flatten()
-        val minimumAreaAllowed = inputImageWidth * inputImageHeight * 0.01
-        val fixedAreas = Array(inputImageWidth) { IntArray(inputImageHeight) }
-        for (x in 0 until inputImageWidth) {
-            for (y in 0 until inputImageHeight) {
-                val rawPixelLabel = rawAreas[x][y]
-                if (rawPixelLabel <= 1) {
-                    fixedAreas[x][y] = rawPixelLabel
-                } else {
-                    val numberOfPixelsPerLabel = flattenedLabels.count { it == rawPixelLabel }
-                    if (numberOfPixelsPerLabel > minimumAreaAllowed) {
-                        fixedAreas[x][y] = rawPixelLabel
-                    } else {
-                        Log.d(
-                            "DeepPanel",
-                            "Removing area with label $rawPixelLabel because the size is $numberOfPixelsPerLabel and the minimum allowed size is $minimumAreaAllowed"
-                        )
-                        fixedAreas[x][y] = -1
-                    }
-                }
-            }
-        }
-        return fixedAreas
     }
 
     private fun resizeInput(bitmapToResize: Bitmap): Bitmap {
@@ -305,7 +244,6 @@ private fun <T> logExecutionTime(name: String, lambda: () -> T): T {
 typealias Prediction = Array<IntArray>
 
 data class PredictionResult(
-    val prediction: Prediction,
     val connectedAreas: Prediction,
     val panels: Panels
 )
@@ -313,7 +251,6 @@ data class PredictionResult(
 data class DetailedPredictionResult(
     val imageInput: Bitmap,
     val resizedImage: Bitmap,
-    val predictedBitmap: Bitmap,
     val labeledAreasBitmap: Bitmap,
     val panelsBitmap: Bitmap,
     val predictionResult: PredictionResult

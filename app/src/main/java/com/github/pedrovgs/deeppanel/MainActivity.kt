@@ -72,14 +72,10 @@ class MainActivity : AppCompatActivity() {
                 Log.d("DeepPanel", message)
                 Toast.makeText(loading.context, message, Toast.LENGTH_SHORT).show()
                 image.setImageBitmap(result.imageInput)
-                prediction.setImageBitmap(result.predictedBitmap)
                 mask.setImageBitmap(result.labeledAreasBitmap)
                 panelsInfo.setImageBitmap(result.panelsBitmap)
                 image.setOnClickListener {
                     FullScreenImageActivity.open(this, result.resizedImage)
-                }
-                prediction.setOnClickListener {
-                    FullScreenImageActivity.open(this, result.predictedBitmap)
                 }
                 mask.setOnClickListener {
                     FullScreenImageActivity.open(this, result.labeledAreasBitmap)

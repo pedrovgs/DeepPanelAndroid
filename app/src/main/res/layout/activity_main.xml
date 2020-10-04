@@ -22,7 +22,7 @@
         android:layout_height="0dp"
         android:gravity="center"
         android:orientation="vertical"
-        android:weightSum="4"
+        android:weightSum="3"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar">
 
@@ -32,13 +32,6 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@android:color/holo_red_light" />
-
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/prediction"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@android:color/holo_green_light" />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/mask"
