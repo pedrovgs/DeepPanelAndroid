@@ -26,8 +26,8 @@ data class Panel(
     val right: Int,
     val bottom: Int
 ) {
-    val width: Int = right - left;
-    val height: Int = bottom - top;
+    val width: Int = right - left
+    val height: Int = bottom - top
 }
 
 // Mutable code in data classes is really handy when initializing instances

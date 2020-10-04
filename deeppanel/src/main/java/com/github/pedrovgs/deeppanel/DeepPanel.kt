@@ -34,7 +34,6 @@ class DeepPanel {
         }
     }
 
-
     fun extractPanelsInfo(bitmap: Bitmap): PredictionResult {
         val resizedImage = resizeInput(bitmap)
         val modelInput = convertBitmapToByteBuffer(resizedImage)
@@ -91,5 +90,4 @@ class DeepPanel {
         }
         return Panels(panels)
     }
-
 }

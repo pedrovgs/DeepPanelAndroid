@@ -60,16 +60,16 @@ jobjectArray result_to_java_raw_panels_info(JNIEnv *env, DeepPanelResult result)
 
 jobject compose_java_result(JNIEnv *env, DeepPanelResult result, int width, int height) {
     int **connectedComponentsMatrix = result.connected_components.clusters_matrix;
-
     jobjectArray java_ints_array = int_array_to_java_array(env, connectedComponentsMatrix, width,
                                                            height);
+    jobjectArray panels = result_to_java_raw_panels_info(env, result);
+
     jclass result_class = env->FindClass("com/github/pedrovgs/deeppanel/RawPanelsInfo");
     jmethodID constructor = env->GetMethodID(result_class, "<init>", "()V");
     jobject result_objc = env->NewObject(result_class, constructor);
     jmethodID set_int_arrays_method = env->GetMethodID(result_class, "setConnectedAreas", "([[I)V");
     env->CallVoidMethod(result_objc, set_int_arrays_method, java_ints_array);
 
-    jobjectArray panels = result_to_java_raw_panels_info(env, result);
     jmethodID set_panels_method = env->GetMethodID(result_class, "setPanels", "([Lcom/github/pedrovgs/deeppanel/RawPanel;)V");
     env->CallVoidMethod(result_objc, set_panels_method, panels);
     return result_objc;
@@ -93,6 +93,8 @@ Java_com_github_pedrovgs_deeppanel_NativeDeepPanel_extractPanelsInfo
         for (int j = 0; j < height; j++) {
             // j and i indexes order is changed on purpose because the original matrix
             // is rotated when reading the values.
+            // TODO: Fix weird error here returning a null row randomly "map_predicted_row_to_label"
+            // should be broken.
             labeled_matrix[i][j] = map_predicted_row_to_label(env, prediction, j, i);
         }
     }
