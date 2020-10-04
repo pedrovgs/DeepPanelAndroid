@@ -101,12 +101,13 @@ extract_panels_data(ConnectedComponentResult connected_components_result,
     } else {
         vertical_correction = ((height * scale) - original_image_height) / 2;
     }
+    int border = 30;
     for (int i = 1; i <= number_of_panels; i++) {
         Panel panel;
-        panel.left = apply_scale_and_add_border(min_x_values[i], scale, -30) - horizontal_correction;
-        panel.top = apply_scale_and_add_border(min_y_values[i], scale, -30) - vertical_correction;
-        panel.right = apply_scale_and_add_border(max_x_values[i], scale, 30) - horizontal_correction;
-        panel.bottom = apply_scale_and_add_border(max_y_values[i], scale, 30) - vertical_correction;
+        panel.left = apply_scale_and_add_border(min_x_values[i], scale, -border) - horizontal_correction;
+        panel.top = apply_scale_and_add_border(min_y_values[i], scale, -border) - vertical_correction;
+        panel.right = apply_scale_and_add_border(max_x_values[i], scale, border) - horizontal_correction;
+        panel.bottom = apply_scale_and_add_border(max_y_values[i], scale, border) - vertical_correction;
         panels[i - 1] = panel;
     }
     free(min_x_values);

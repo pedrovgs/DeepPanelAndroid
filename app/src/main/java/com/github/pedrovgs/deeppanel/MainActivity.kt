@@ -14,7 +14,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val deepPanel = DeepPanel()
-        deepPanel.initialize(this)
         var currentPage = 0
         val resList = listOf(
             R.drawable.sample_page_0,
@@ -30,33 +29,11 @@ class MainActivity : AppCompatActivity() {
             R.drawable.sample_page_10
         ).reversed()
         val size: Int = resList.size
-        //findPanelsForPage(deepPanel, resList[currentPage % size])
         showPredictionForPage(deepPanel, resList[currentPage % size])
         toolbar.setOnClickListener {
             currentPage += 1
-            //findPanelsForPage(deepPanel, resList[currentPage % size])
             showPredictionForPage(deepPanel, resList[currentPage % size])
         }
-    }
-
-    private fun findPanelsForPage(deepPanel: DeepPanel, pageResource: Int) {
-        Log.d("DeepPanel", "Initializing page analysis")
-        container.visibility = View.INVISIBLE
-        loading.visibility = View.VISIBLE
-        val bitmapSamplePage = resources.getDrawable(pageResource, null).toBitmap()
-        Thread {
-            val initialTime = System.currentTimeMillis()
-            deepPanel.extractPanelsInfo(bitmapSamplePage)
-            val now = System.currentTimeMillis()
-            val timeElapsed = now - initialTime
-            Log.d("DeepPanel", "Page analyzed")
-            container.post {
-                val message = "Page analyzed in $timeElapsed ms"
-                Log.d("DeepPanel", message)
-                Toast.makeText(loading.context, message, Toast.LENGTH_SHORT).show()
-                loading.visibility = View.GONE
-            }
-        }.start()
     }
 
     private fun showPredictionForPage(deepPanel: DeepPanel, pageResource: Int) {
