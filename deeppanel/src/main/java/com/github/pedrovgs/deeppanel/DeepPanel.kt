@@ -16,9 +16,7 @@ import org.tensorflow.lite.Interpreter
 
 class DeepPanel {
     companion object {
-        private const val inputImageWidth = 224
-        private const val inputImageHeight = 224
-        private const val borderSize = 3
+        private const val modelInputImageSize = 224
     }
 
     private val ccl = NativeDeepPanel()
@@ -34,12 +32,17 @@ class DeepPanel {
         val resizedImage = resizeInput(bitmap)
         val modelInput = convertBitmapToByteBuffer(resizedImage)
         val prediction =
-            Array(1) { Array(inputImageWidth) { Array(inputImageHeight) { FloatArray(3) } } }
+            Array(1) { Array(modelInputImageSize) { Array(modelInputImageSize) { FloatArray(3) } } }
         interpreter.run(modelInput, prediction)
-        val connectedAreas = ccl.extractPanelsInfo(prediction[0])
-        //val connectedAreas = findPanels(labeledPrediction)
+        val scale = computeResizeScale(bitmap)
+        val connectedAreas = ccl.extractPanelsInfo(prediction[0], scale)
         val panels = extractPanelsInfo(connectedAreas)
         return PredictionResult(connectedAreas, panels)
+    }
+
+    private fun computeResizeScale(bitmap: Bitmap): Float {
+        val originalSize = max(bitmap.width, bitmap.height)
+        return originalSize / modelInputImageSize.toFloat()
     }
 
     fun extractDetailedPanelsInfo(bitmap: Bitmap): DetailedPredictionResult {
@@ -48,9 +51,10 @@ class DeepPanel {
             convertBitmapToByteBuffer(resizedImage)
         }
         val prediction =
-            Array(1) { Array(inputImageWidth) { Array(inputImageHeight) { FloatArray(3) } } }
+            Array(1) { Array(modelInputImageSize) { Array(modelInputImageSize) { FloatArray(3) } } }
         logExecutionTime("Evaluate model") { interpreter.run(modelInput, prediction) }
-        val connectedAreas = logExecutionTime("C++ code") { ccl.extractPanelsInfo(prediction[0]) }
+        val scale = computeResizeScale(bitmap)
+        val connectedAreas = logExecutionTime("C++ code") { ccl.extractPanelsInfo(prediction[0], scale) }
         val labeledAreasBitmap =
             logExecutionTime("Bitmap from areas") { createBitmapFromPrediction(connectedAreas) }
         val panels = logExecutionTime("Extract panels info") { extractPanelsInfo(connectedAreas) }
@@ -103,8 +107,8 @@ class DeepPanel {
         }
         val panelLabels = allLabels.filter { it > 1 }.map { it - 2 }.sorted()
         val borderInfo = Array(panelLabels.count()) { Array(4) { -1 } }
-        for (x in 0 until inputImageWidth) {
-            for (y in 0 until inputImageHeight) {
+        for (x in 0 until modelInputImageSize) {
+            for (y in 0 until modelInputImageSize) {
                 val labelInArea = labeledAreas[x][y]
                 if (labelInArea <= 1) {
                     continue
@@ -128,11 +132,12 @@ class DeepPanel {
                 }
             }
         }
+        val borderSize = 3
         return Panels(borderInfo.mapIndexed { index, borderInfoPerLabel ->
             val minX = max(borderInfoPerLabel[0] - borderSize, 0)
-            val maxX = min(borderInfoPerLabel[1] + borderSize, inputImageHeight)
+            val maxX = min(borderInfoPerLabel[1] + borderSize, modelInputImageSize)
             val minY = max(borderInfoPerLabel[2] - borderSize, 0)
-            val maxY = min(borderInfoPerLabel[3] + borderSize, inputImageHeight)
+            val maxY = min(borderInfoPerLabel[3] + borderSize, modelInputImageSize)
             Panel(
                 panelNumberInPage = index,
                 left = minX,
@@ -154,8 +159,8 @@ class DeepPanel {
     }
 
     private fun resizeInput(bitmapToResize: Bitmap): Bitmap {
-        val reqWidth = inputImageWidth.toFloat()
-        val reqHeight = inputImageHeight.toFloat()
+        val reqWidth = modelInputImageSize.toFloat()
+        val reqHeight = modelInputImageSize.toFloat()
         val matrix = Matrix()
         matrix.setRectToRect(
             RectF(0f, 0f, bitmapToResize.width.toFloat(), bitmapToResize.height.toFloat()),
@@ -185,10 +190,10 @@ class DeepPanel {
         val floatTypeSizeInBytes = 4
         val numberOfChannels = 3
         val modelInputSize =
-            floatTypeSizeInBytes * inputImageWidth * inputImageHeight * numberOfChannels
+            floatTypeSizeInBytes * modelInputImageSize * modelInputImageSize * numberOfChannels
         val imgData = ByteBuffer.allocateDirect(modelInputSize)
         imgData.order(ByteOrder.nativeOrder())
-        val pixels = IntArray(inputImageWidth * inputImageHeight)
+        val pixels = IntArray(modelInputImageSize * modelInputImageSize)
         bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
         for (i in pixels.indices) {
             val pixelInfo: Int = pixels[i]

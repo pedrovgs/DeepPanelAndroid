@@ -7,6 +7,6 @@ public class NativeDeepPanel {
         System.loadLibrary("deep-panel");
     }
 
-    native int[][] extractPanelsInfo(float[][][] prediction);
+    native int[][] extractPanelsInfo(float[][][] prediction, float scale);
 
 }

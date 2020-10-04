@@ -51,8 +51,14 @@ ConnectedComponentResult remove_small_areas_and_recover_border(
 #define max(a, b) (a>b?a:b)
 #define min(a, b) (a>b?b:a)
 
+int apply_scale_and_add_border(int position, float scale, int border) {
+    float float_position = (float) position;
+    float scaled_position = float_position * scale;
+    return ((int) scaled_position) + border;
+}
+
 DeepPanelResult
-extract_panels_data(ConnectedComponentResult connected_components_result, int width, int height) {
+extract_panels_data(ConnectedComponentResult connected_components_result, int width, int height, float scale) {
     int number_of_panels = connected_components_result.total_clusters;
     int current_normalized_label = 0;
     int *normalized_labels = new int[width * height];
@@ -85,10 +91,10 @@ extract_panels_data(ConnectedComponentResult connected_components_result, int wi
     Panel *panels = new Panel[number_of_panels];
     for (int i = 1; i <= number_of_panels; i++) {
         Panel panel;
-        panel.left = min_x_values[i];
-        panel.top = min_y_values[i];
-        panel.right = max_x_values[i];
-        panel.bottom = max_y_values[i];
+        panel.left = apply_scale_and_add_border(min_x_values[i], scale, -30);
+        panel.top = apply_scale_and_add_border(min_y_values[i], scale, -30);
+        panel.right = apply_scale_and_add_border(max_x_values[i], scale, 30);
+        panel.bottom = apply_scale_and_add_border(max_y_values[i], scale, 30);
         panels[i] = panel;
     }
     free(min_x_values);
@@ -101,8 +107,8 @@ extract_panels_data(ConnectedComponentResult connected_components_result, int wi
     return deep_panel_result;
 }
 
-DeepPanelResult extract_panels_info(int **labeled_matrix, int width, int height) {
+DeepPanelResult extract_panels_info(int **labeled_matrix, int width, int height, float scale) {
     ConnectedComponentResult improvedAreasResult = find_components(labeled_matrix, width, height);
     improvedAreasResult = remove_small_areas_and_recover_border(improvedAreasResult, width, height);
-    return extract_panels_data(improvedAreasResult, width, height);
+    return extract_panels_data(improvedAreasResult, width, height, scale);
 }

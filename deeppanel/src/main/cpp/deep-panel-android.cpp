@@ -35,7 +35,9 @@ extern "C" JNIEXPORT jobjectArray JNICALL
 Java_com_github_pedrovgs_deeppanel_NativeDeepPanel_extractPanelsInfo
         (
                 JNIEnv *env,
-                jobject /* this */, jobjectArray prediction) {
+                jobject /* this */,
+                jobjectArray prediction,
+                jfloat scale) {
     auto first_item = (jobjectArray) env->GetObjectArrayElement(prediction, 0);
     jsize width = env->GetArrayLength(prediction);
     jsize height = env->GetArrayLength(first_item);
@@ -48,7 +50,7 @@ Java_com_github_pedrovgs_deeppanel_NativeDeepPanel_extractPanelsInfo
             labeled_matrix[i][j] = map_predicted_row_to_label(env, prediction, j, i);
         }
     }
-    DeepPanelResult result = extract_panels_info(labeled_matrix, width, height);
+    DeepPanelResult result = extract_panels_info(labeled_matrix, width, height, scale);
     int **connectedComponentsMatrix = result.connected_components.clusters_matrix;
     jobjectArray java_ints_array = intArrayToJavaIntArray(env, connectedComponentsMatrix, width,
                                                           height);
