@@ -70,8 +70,8 @@ int **find_components(int **matrix, int m, int n) {
 
     /* scan the matrix */
 
-    for (int i=0; i<m; i++)
-        for (int j=0; j<n; j++)
+    for (int j=0; j<n; j++)
+        for (int i=0; i<m; i++)
             if (matrix[i][j]) {                        // if occupied ...
 
                 int up = (i==0 ? 0 : matrix[i-1][j]);    //  look up
@@ -102,8 +102,8 @@ int **find_components(int **matrix, int m, int n) {
 
     int *new_labels = static_cast<int *>(calloc(n_labels, sizeof(int))); // allocate array, initialized to zero
 
-    for (int i=0; i<m; i++)
-        for (int j=0; j<n; j++)
+    for (int j=0; j<n; j++)
+        for (int i=0; i<m; i++)
             if (matrix[i][j]) {
                 int x = uf_find(matrix[i][j]);
                 if (new_labels[x] == 0) {
