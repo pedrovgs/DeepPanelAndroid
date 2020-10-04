@@ -11,7 +11,6 @@ import android.util.Log
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.max
-import kotlin.math.min
 import org.tensorflow.lite.Interpreter
 
 class DeepPanel {
@@ -35,14 +34,9 @@ class DeepPanel {
             Array(1) { Array(modelInputImageSize) { Array(modelInputImageSize) { FloatArray(3) } } }
         interpreter.run(modelInput, prediction)
         val scale = computeResizeScale(bitmap)
-        val connectedAreas = ccl.extractPanelsInfo(prediction[0], scale)
-        val panels = extractPanelsInfo(connectedAreas)
-        return PredictionResult(connectedAreas, panels)
-    }
-
-    private fun computeResizeScale(bitmap: Bitmap): Float {
-        val originalSize = max(bitmap.width, bitmap.height)
-        return originalSize / modelInputImageSize.toFloat()
+        val panelsInfo = ccl.extractPanelsInfo(prediction[0], scale, bitmap.width, bitmap.height)
+        val panels = composePanels(panelsInfo)
+        return PredictionResult(panelsInfo.connectedAreas, panels)
     }
 
     fun extractDetailedPanelsInfo(bitmap: Bitmap): DetailedPredictionResult {
@@ -54,28 +48,24 @@ class DeepPanel {
             Array(1) { Array(modelInputImageSize) { Array(modelInputImageSize) { FloatArray(3) } } }
         logExecutionTime("Evaluate model") { interpreter.run(modelInput, prediction) }
         val scale = computeResizeScale(bitmap)
-        val connectedAreas = logExecutionTime("C++ code") { ccl.extractPanelsInfo(prediction[0], scale) }
+        val panelsInfo =
+            logExecutionTime("C++ code") { ccl.extractPanelsInfo(prediction[0], scale, bitmap.width, bitmap.height) }
         val labeledAreasBitmap =
-            logExecutionTime("Bitmap from areas") { createBitmapFromPrediction(connectedAreas) }
-        val panels = logExecutionTime("Extract panels info") { extractPanelsInfo(connectedAreas) }
+            logExecutionTime("Bitmap from areas") { createBitmapFromPrediction(panelsInfo.connectedAreas) }
+        val panels = logExecutionTime("Extract panels info") { composePanels(panelsInfo) }
         val panelsBitmap =
-            logExecutionTime("Bitmap from panels") { generatePanelsBitmap(resizedImage, panels) }
+            logExecutionTime("Bitmap from panels") { generatePanelsBitmap(bitmap, panels) }
         return DetailedPredictionResult(
             bitmap,
             resizedImage,
             labeledAreasBitmap,
             panelsBitmap,
-            PredictionResult(connectedAreas, panels)
+            PredictionResult(panelsInfo.connectedAreas, panels)
         )
     }
 
-    private fun generatePanelsBitmap(resizedImage: Bitmap, panels: Panels): Bitmap {
-        val tempBitmap = Bitmap.createScaledBitmap(
-            resizedImage,
-            resizedImage.getWidth(),
-            resizedImage.getHeight(),
-            true
-        )
+    private fun generatePanelsBitmap(sourceBitmap: Bitmap, panels: Panels): Bitmap {
+        val tempBitmap = sourceBitmap.copy(Bitmap.Config.ARGB_8888, true)
         val canvas = Canvas(tempBitmap)
         panels.panelsInfo.forEach { panel ->
             val paint = Paint()
@@ -94,68 +84,6 @@ class DeepPanel {
             )
         }
         return tempBitmap
-    }
-
-    private fun extractPanelsInfo(labeledAreas: Array<IntArray>): Panels {
-        if (true) { //TODO: Remove this hack to avoid crash temporally
-            return Panels(listOf())
-        }
-        val allLabels = labeledAreas.flatten().distinct()
-        Log.d("DeepPanel", "Number of different areas = ${allLabels.count()}")
-        allLabels.forEach { label ->
-            Log.d("DeepPanel", "Number of different areas. Label = $label")
-        }
-        val panelLabels = allLabels.filter { it > 1 }.map { it - 2 }.sorted()
-        val borderInfo = Array(panelLabels.count()) { Array(4) { -1 } }
-        for (x in 0 until modelInputImageSize) {
-            for (y in 0 until modelInputImageSize) {
-                val labelInArea = labeledAreas[x][y]
-                if (labelInArea <= 1) {
-                    continue
-                }
-                val currentBorderInfo = borderInfo[labelInArea - 2]
-                val currentMinX = currentBorderInfo[0]
-                if (x < currentMinX || currentMinX == -1) {
-                    currentBorderInfo[0] = x
-                }
-                val currentMaxX = currentBorderInfo[1]
-                if (x > currentMaxX) {
-                    currentBorderInfo[1] = x
-                }
-                val currentMinY = currentBorderInfo[2]
-                if (y < currentMinY || currentMinY == -1) {
-                    currentBorderInfo[2] = y
-                }
-                val currentMaxY = currentBorderInfo[3]
-                if (y > currentMaxY) {
-                    currentBorderInfo[3] = y
-                }
-            }
-        }
-        val borderSize = 3
-        return Panels(borderInfo.mapIndexed { index, borderInfoPerLabel ->
-            val minX = max(borderInfoPerLabel[0] - borderSize, 0)
-            val maxX = min(borderInfoPerLabel[1] + borderSize, modelInputImageSize)
-            val minY = max(borderInfoPerLabel[2] - borderSize, 0)
-            val maxY = min(borderInfoPerLabel[3] + borderSize, modelInputImageSize)
-            Panel(
-                panelNumberInPage = index,
-                left = minX,
-                bottom = minY,
-                width = maxX - minX,
-                height = maxY - minY
-            )
-        })
-    }
-
-    private fun Array<IntArray>.flatten(): List<Int> {
-        val result = mutableListOf(sumBy { it.size })
-        for (element in this) {
-            for (i in element) {
-                result.add(i)
-            }
-        }
-        return result
     }
 
     private fun resizeInput(bitmapToResize: Bitmap): Bitmap {
@@ -207,7 +135,7 @@ class DeepPanel {
         return imgData
     }
 
-    private fun createBitmapFromPrediction(prediction: Array<IntArray>): Bitmap {
+    private fun createBitmapFromPrediction(prediction: Prediction): Bitmap {
         val imageSize = 224
         val bitmap = Bitmap.createBitmap(imageSize, imageSize, Bitmap.Config.ARGB_8888)
         for (x in 0 until imageSize) {
@@ -238,6 +166,24 @@ class DeepPanel {
         12 -> Color.parseColor("#a3560d")
         else -> Color.WHITE
     }
+
+    private fun composePanels(panelsInfo: RawPanelsInfo): Panels {
+        val panels = panelsInfo.panels.mapIndexed { index, rawInfo ->
+            Panel(
+                panelNumberInPage = index,
+                left = rawInfo.left,
+                top = rawInfo.top,
+                right = rawInfo.right,
+                bottom = rawInfo.bottom
+            )
+        }
+        return Panels(panels)
+    }
+
+    private fun computeResizeScale(bitmap: Bitmap): Float {
+        val originalSize = max(bitmap.width, bitmap.height)
+        return originalSize / modelInputImageSize.toFloat()
+    }
 }
 
 private fun <T> logExecutionTime(name: String, lambda: () -> T): T {
@@ -248,18 +194,3 @@ private fun <T> logExecutionTime(name: String, lambda: () -> T): T {
     Log.d("DeepPanel", "Time needed for $name = $time ms")
     return result
 }
-
-typealias Prediction = Array<IntArray>
-
-data class PredictionResult(
-    val connectedAreas: Prediction,
-    val panels: Panels
-)
-
-data class DetailedPredictionResult(
-    val imageInput: Bitmap,
-    val resizedImage: Bitmap,
-    val labeledAreasBitmap: Bitmap,
-    val panelsBitmap: Bitmap,
-    val predictionResult: PredictionResult
-)

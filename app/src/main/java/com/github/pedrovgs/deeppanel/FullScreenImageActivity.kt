@@ -9,11 +9,10 @@ import kotlinx.android.synthetic.main.activity_full_screen_image.*
 
 class FullScreenImageActivity : AppCompatActivity() {
     companion object {
-        private const val extraImage: String = "FullScreenImageActivity_extraImage"
+        lateinit var extraImage: Bitmap
         fun open(activity: Activity, bitmap: Bitmap) {
-            val bundle = Bundle()
+            extraImage = bitmap
             val intent = Intent(activity, FullScreenImageActivity::class.java)
-            intent.putExtra(extraImage, bitmap)
             activity.startActivity(intent)
         }
     }
@@ -21,7 +20,7 @@ class FullScreenImageActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_full_screen_image)
-        val bitmap: Bitmap = intent.extras?.getParcelable(extraImage)!!
+        val bitmap: Bitmap = extraImage
         image.setImageBitmap(bitmap)
     }
 }

@@ -20,7 +20,7 @@ jint map_predicted_row_to_label(JNIEnv *env, jobjectArray prediction, int i, int
     }
 }
 
-jobjectArray intArrayToJavaIntArray(JNIEnv *env, int **matrix, int width, int height) {
+jobjectArray int_array_to_java_array(JNIEnv *env, int **matrix, int width, int height) {
     jclass int_array_class = env->FindClass("[I");
     jobjectArray labels_array = env->NewObjectArray(width, int_array_class, nullptr);
     for (int i = 0; i < width; i++) {
@@ -31,13 +31,59 @@ jobjectArray intArrayToJavaIntArray(JNIEnv *env, int **matrix, int width, int he
     return labels_array;
 }
 
-extern "C" JNIEXPORT jobjectArray JNICALL
+jobject panel_to_java_raw_panel(JNIEnv *env, Panel panel) {
+    jclass raw_panel_class = env->FindClass("com/github/pedrovgs/deeppanel/RawPanel");
+    jmethodID constructor = env->GetMethodID(raw_panel_class, "<init>", "()V");
+    jobject result_objc = env->NewObject(raw_panel_class, constructor);
+    jmethodID set_left = env->GetMethodID(raw_panel_class, "setLeft", "(I)V");
+    env->CallVoidMethod(result_objc, set_left, panel.left);
+    jmethodID set_top = env->GetMethodID(raw_panel_class, "setTop", "(I)V");
+    env->CallVoidMethod(result_objc, set_top, panel.top);
+    jmethodID set_right = env->GetMethodID(raw_panel_class, "setRight", "(I)V");
+    env->CallVoidMethod(result_objc, set_right, panel.right);
+    jmethodID set_bottom = env->GetMethodID(raw_panel_class, "setBottom", "(I)V");
+    env->CallVoidMethod(result_objc, set_bottom, panel.bottom);
+    return result_objc;
+}
+
+jobjectArray result_to_java_raw_panels_info(JNIEnv *env, DeepPanelResult result) {
+    int number_of_panels = result.connected_components.total_clusters;
+    jclass panel_class = env->FindClass("com/github/pedrovgs/deeppanel/RawPanel");
+    jobjectArray panels_array = env->NewObjectArray(number_of_panels, panel_class, nullptr);
+    for (int i = 0; i < number_of_panels; i++) {
+        Panel panel = result.panels[i];
+        jobject raw_panel = panel_to_java_raw_panel(env, panel);
+        env->SetObjectArrayElement(panels_array, i, raw_panel);
+    }
+    return panels_array;
+}
+
+jobject compose_java_result(JNIEnv *env, DeepPanelResult result, int width, int height) {
+    int **connectedComponentsMatrix = result.connected_components.clusters_matrix;
+
+    jobjectArray java_ints_array = int_array_to_java_array(env, connectedComponentsMatrix, width,
+                                                           height);
+    jclass result_class = env->FindClass("com/github/pedrovgs/deeppanel/RawPanelsInfo");
+    jmethodID constructor = env->GetMethodID(result_class, "<init>", "()V");
+    jobject result_objc = env->NewObject(result_class, constructor);
+    jmethodID set_int_arrays_method = env->GetMethodID(result_class, "setConnectedAreas", "([[I)V");
+    env->CallVoidMethod(result_objc, set_int_arrays_method, java_ints_array);
+
+    jobjectArray panels = result_to_java_raw_panels_info(env, result);
+    jmethodID set_panels_method = env->GetMethodID(result_class, "setPanels", "([Lcom/github/pedrovgs/deeppanel/RawPanel;)V");
+    env->CallVoidMethod(result_objc, set_panels_method, panels);
+    return result_objc;
+}
+
+extern "C" JNIEXPORT jobject JNICALL
 Java_com_github_pedrovgs_deeppanel_NativeDeepPanel_extractPanelsInfo
         (
                 JNIEnv *env,
                 jobject /* this */,
                 jobjectArray prediction,
-                jfloat scale) {
+                jfloat scale,
+                jint original_image_width,
+                jint original_image_height) {
     auto first_item = (jobjectArray) env->GetObjectArrayElement(prediction, 0);
     jsize width = env->GetArrayLength(prediction);
     jsize height = env->GetArrayLength(first_item);
@@ -50,11 +96,6 @@ Java_com_github_pedrovgs_deeppanel_NativeDeepPanel_extractPanelsInfo
             labeled_matrix[i][j] = map_predicted_row_to_label(env, prediction, j, i);
         }
     }
-    DeepPanelResult result = extract_panels_info(labeled_matrix, width, height, scale);
-    int **connectedComponentsMatrix = result.connected_components.clusters_matrix;
-    jobjectArray java_ints_array = intArrayToJavaIntArray(env, connectedComponentsMatrix, width,
-                                                          height);
-    return java_ints_array;
+    DeepPanelResult result = extract_panels_info(labeled_matrix, width, height, scale, original_image_width, original_image_height);
+    return compose_java_result(env, result, width, height);
 }
-
-
