@@ -5,9 +5,27 @@ import android.graphics.Bitmap
 typealias Prediction = Array<IntArray>
 
 data class PredictionResult(
-    val connectedAreas: Prediction,
+    val rawPrediction: Prediction,
     val panels: Panels
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as PredictionResult
+
+        if (!rawPrediction.contentDeepEquals(other.rawPrediction)) return false
+        if (panels != other.panels) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = rawPrediction.contentDeepHashCode()
+        result = 31 * result + panels.hashCode()
+        return result
+    }
+}
 
 data class DetailedPredictionResult(
     val imageInput: Bitmap,
@@ -17,7 +35,9 @@ data class DetailedPredictionResult(
     val predictionResult: PredictionResult
 )
 
-data class Panels(val panelsInfo: List<Panel>)
+data class Panels(val panelsInfo: List<Panel>) {
+    val numberOfPanels: Int = panelsInfo.count()
+}
 
 data class Panel(
     val panelNumberInPage: Int,

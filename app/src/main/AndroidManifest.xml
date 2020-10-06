@@ -25,6 +25,9 @@
         <activity
             android:name=".FullScreenImageActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".ExtractPanelsActivity"
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>

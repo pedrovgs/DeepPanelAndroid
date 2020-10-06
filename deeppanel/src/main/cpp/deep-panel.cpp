@@ -20,9 +20,9 @@ ConnectedComponentResult remove_small_areas_and_recover_border(
     int **clusters_matrix = connected_component_result.clusters_matrix;
     int *pixels_per_labels = connected_component_result.pixels_per_labels;
     int image_size = width * height;
-    int max_allowed_different_clusters = 2000;
+    int max_allowed_different_clusters = 1000;
     bool *label_removed = new bool[max_allowed_different_clusters];
-    for (int i = 0; i < image_size; i++) {
+    for (int i = 0; i < max_allowed_different_clusters; i++) {
         label_removed[i] = false;
     }
     int min_allowed_area = image_size * 0.03;
@@ -55,6 +55,16 @@ int apply_scale_and_add_border(int position, float scale, int border) {
     float float_position = (float) position;
     float scaled_position = float_position * scale;
     return ((int) scaled_position) + border;
+}
+
+int clamp(int value, int min, int max) {
+    if (value < min) {
+        return min;
+    } else if (value > max) {
+        return max;
+    } else {
+        return value;
+    }
 }
 
 DeepPanelResult
@@ -104,10 +114,18 @@ extract_panels_data(ConnectedComponentResult connected_components_result,
     int border = 30;
     for (int i = 1; i <= number_of_panels; i++) {
         Panel panel;
-        panel.left = apply_scale_and_add_border(min_x_values[i], scale, -border) - horizontal_correction;
-        panel.top = apply_scale_and_add_border(min_y_values[i], scale, -border) - vertical_correction;
-        panel.right = apply_scale_and_add_border(max_x_values[i], scale, border) - horizontal_correction;
-        panel.bottom = apply_scale_and_add_border(max_y_values[i], scale, border) - vertical_correction;
+        int proposed_left =
+                apply_scale_and_add_border(min_x_values[i], scale, -border) - horizontal_correction;
+        int proposed_top =
+                apply_scale_and_add_border(min_y_values[i], scale, -border) - vertical_correction;
+        int proposed_right =
+                apply_scale_and_add_border(max_x_values[i], scale, border) - horizontal_correction;
+        int proposed_bottom =
+                apply_scale_and_add_border(max_y_values[i], scale, border) - vertical_correction;
+        panel.left = clamp(proposed_left, 0, original_image_width);
+        panel.top = clamp(proposed_top, 0, original_image_height);
+        panel.right = clamp(proposed_right, 0, original_image_width);
+        panel.bottom = clamp(proposed_bottom, 0, original_image_height);
         panels[i - 1] = panel;
     }
     free(min_x_values);
