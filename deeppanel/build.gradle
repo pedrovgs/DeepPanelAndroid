@@ -7,6 +7,7 @@ android {
     buildToolsVersion "29.0.3"
 
     defaultConfig {
+        testApplicationId "com.github.pedrovgs.deeppanel.lib"
         minSdkVersion 21
         targetSdkVersion 29
         versionCode 1
@@ -41,9 +42,9 @@ android {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation "androidx.core:core-ktx:1.3.0"
+    implementation "androidx.core:core-ktx:1.3.1"
     implementation "org.tensorflow:tensorflow-lite:2.2.0"
     testImplementation "junit:junit:4.13"
-    androidTestImplementation "androidx.test.ext:junit:1.1.1"
-    androidTestImplementation "androidx.test.espresso:espresso-core:3.2.0"
+    androidTestImplementation "androidx.test.ext:junit:1.1.2"
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.3.0"
 }

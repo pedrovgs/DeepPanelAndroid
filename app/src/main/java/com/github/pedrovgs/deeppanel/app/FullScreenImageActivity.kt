@@ -1,4 +1,4 @@
-package com.github.pedrovgs.deeppanel
+package com.github.pedrovgs.deeppanel.app
 
 import android.app.Activity
 import android.content.Intent

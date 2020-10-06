@@ -15,13 +15,17 @@ import org.tensorflow.lite.Interpreter
 class DeepPanel {
     companion object {
         const val modelInputImageSize = 224
-        private val ccl = NativeDeepPanel()
+        private lateinit var nativeDeepPanel: NativeDeepPanel
         private lateinit var interpreter: Interpreter
 
         fun initialize(context: Context) {
+            if (this::interpreter.isInitialized) {
+                return
+            }
             val model = loadModel(context)
             interpreter = Interpreter(model)
-            ccl.initialize()
+            nativeDeepPanel = NativeDeepPanel()
+            nativeDeepPanel.initialize()
         }
 
         private fun loadModel(context: Context): ByteBuffer {
@@ -41,7 +45,7 @@ class DeepPanel {
             Array(1) { Array(modelInputImageSize) { Array(modelInputImageSize) { FloatArray(3) } } }
         interpreter.run(modelInput, prediction)
         val scale = computeResizeScale(bitmap)
-        val panelsInfo = ccl.extractPanelsInfo(prediction[0], scale, bitmap.width, bitmap.height)
+        val panelsInfo = nativeDeepPanel.extractPanelsInfo(prediction[0], scale, bitmap.width, bitmap.height)
         val panels = composePanels(panelsInfo)
         return PredictionResult(panelsInfo.connectedAreas, panels)
     }
@@ -57,7 +61,7 @@ class DeepPanel {
         val scale = computeResizeScale(bitmap)
         val panelsInfo =
             logExecutionTime("C++ code") {
-                ccl.extractPanelsInfo(
+                nativeDeepPanel.extractPanelsInfo(
                     prediction[0],
                     scale,
                     bitmap.width,

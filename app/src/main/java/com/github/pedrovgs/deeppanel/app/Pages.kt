@@ -1,4 +1,4 @@
-package com.github.pedrovgs.deeppanel
+package com.github.pedrovgs.deeppanel.app
 
 object Pages {
     val resList = listOf(
