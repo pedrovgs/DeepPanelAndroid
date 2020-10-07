@@ -4,7 +4,6 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.karumi.shot.ScreenshotTest
 import com.karumi.shot.waitForActivity
 import org.junit.After
@@ -32,13 +31,17 @@ class MainActivityTest : ScreenshotTest {
 
     private fun clickOnGoToNextPage() {
         onView(withId(R.id.nextPageButton)).perform(click())
-        getInstrumentation().waitForIdleSync()
+        waitForIdle()
     }
 
     private fun startActivity(): MainActivity {
         scenario = ActivityScenario.launch(MainActivity::class.java)
         val activity = scenario.waitForActivity()
-        waitForAnimationsToFinish()
+        waitForIdle()
         return activity
+    }
+
+    private fun waitForIdle() {
+        waitForAnimationsToFinish()
     }
 }

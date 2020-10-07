@@ -20,11 +20,7 @@ ConnectedComponentResult remove_small_areas_and_recover_border(
     int **clusters_matrix = connected_component_result.clusters_matrix;
     int *pixels_per_labels = connected_component_result.pixels_per_labels;
     int image_size = width * height;
-    int max_allowed_different_clusters = 1000;
-    bool *label_removed = new bool[max_allowed_different_clusters];
-    for (int i = 0; i < max_allowed_different_clusters; i++) {
-        label_removed[i] = false;
-    }
+    bool label_removed[1000] = { false };
     int min_allowed_area = image_size * 0.03;
     for (int i = 0; i < width; i++)
         for (int j = 0; j < height; j++) {
@@ -40,7 +36,6 @@ ConnectedComponentResult remove_small_areas_and_recover_border(
                 }
             }
         }
-    free(label_removed);
     ConnectedComponentResult result;
     result.clusters_matrix = clusters_matrix;
     result.total_clusters = new_total_clusters;
@@ -76,7 +71,7 @@ extract_panels_data(ConnectedComponentResult connected_components_result,
                     jint original_image_height) {
     int number_of_panels = connected_components_result.total_clusters;
     int current_normalized_label = 0;
-    int *normalized_labels = new int[width * height];
+    int *normalized_labels = new int[width * height] { 0 };
     int *min_x_values = new int[number_of_panels + 1];
     int *max_x_values = new int[number_of_panels + 1];
     int *min_y_values = new int[number_of_panels + 1];
@@ -132,6 +127,7 @@ extract_panels_data(ConnectedComponentResult connected_components_result,
     free(max_x_values);
     free(min_y_values);
     free(max_y_values);
+    free(normalized_labels);
     DeepPanelResult deep_panel_result;
     deep_panel_result.connected_components = connected_components_result;
     deep_panel_result.panels = panels;
