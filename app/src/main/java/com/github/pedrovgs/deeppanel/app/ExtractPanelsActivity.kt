@@ -49,12 +49,26 @@ class ExtractPanelsActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun renderPanelsInfo(panels: Panels, timeElapsed: Long) {
-        numberOfPanelsView.text = "Number of panels: ${panels.numberOfPanels} found in ${timeElapsed}ms"
+        val runningTests = checkIfRunningTests()
+        numberOfPanelsView.text = if (runningTests) {
+            "Number of panels: ${panels.numberOfPanels} found"
+        } else {
+            "Number of panels: ${panels.numberOfPanels} found in ${timeElapsed}ms"
+        }
         panelsInfoView.text = panels.panelsInfo.joinToString("\n---------\n") { panel ->
             """Left: ${panel.left}, Top: ${panel.top}
                     |Right: ${panel.right}, Bottom: ${panel.bottom}
                     |Width: ${panel.width}, Height: ${panel.height}
                 """.trimMargin()
+        }
+    }
+
+    private fun checkIfRunningTests(): Boolean {
+        return try {
+            Class.forName("com.karumi.shot.ShotTestRunner")
+            true
+        } catch (e: Throwable) {
+            false
         }
     }
 }

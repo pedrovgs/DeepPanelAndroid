@@ -19,5 +19,8 @@ jobs:
         run: ./gradlew ktlintCheck
       - name: Run screenshot tests tests
         run: ./gradlew debugExecuteScreenshotTests
-
+      - uses: actions/upload-artifact@v2
+        with:
+          name: reports
+          path: app/build/reports/
 
