@@ -51,7 +51,7 @@
     </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/detail"
+        android:id="@+id/detailPageButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
@@ -60,7 +60,7 @@
         app:srcCompat="@android:drawable/ic_menu_info_details" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/next"
+        android:id="@+id/nextPageButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"

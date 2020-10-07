@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.github.pedrovgs.deeppanel">
+    package="com.github.pedrovgs.deeppanel.app"
+    android:sharedUserId="com.github.pedrovgs.deeppanel.app.uid">
 
     <application
         android:name=".DeepPanelApplication"

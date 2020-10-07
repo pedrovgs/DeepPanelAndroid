@@ -1,4 +1,4 @@
-package com.github.pedrovgs.deeppanel
+package com.github.pedrovgs.deeppanel.app
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -7,12 +7,15 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toBitmap
+import com.github.pedrovgs.deeppanel.Bitmaps
+import com.github.pedrovgs.deeppanel.DeepPanel
+import com.github.pedrovgs.deeppanel.Panels
 import kotlinx.android.synthetic.main.activity_extract_panels.*
 
 class ExtractPanelsActivity : AppCompatActivity() {
 
     companion object {
-        private const val resource_id_extra = "resource_id_extra"
+        const val resource_id_extra = "resource_id_extra"
         fun open(activity: Activity, resId: Int) {
             val intent = Intent(activity, ExtractPanelsActivity::class.java)
             intent.putExtra(resource_id_extra, resId)
@@ -46,12 +49,26 @@ class ExtractPanelsActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun renderPanelsInfo(panels: Panels, timeElapsed: Long) {
-        numberOfPanelsView.text = "Number of panels: ${panels.numberOfPanels} found in ${timeElapsed}ms"
+        val runningTests = checkIfRunningTests()
+        numberOfPanelsView.text = if (runningTests) {
+            "Number of panels: ${panels.numberOfPanels} found"
+        } else {
+            "Number of panels: ${panels.numberOfPanels} found in ${timeElapsed}ms"
+        }
         panelsInfoView.text = panels.panelsInfo.joinToString("\n---------\n") { panel ->
             """Left: ${panel.left}, Top: ${panel.top}
                     |Right: ${panel.right}, Bottom: ${panel.bottom}
                     |Width: ${panel.width}, Height: ${panel.height}
                 """.trimMargin()
+        }
+    }
+
+    private fun checkIfRunningTests(): Boolean {
+        return try {
+            Class.forName("com.karumi.shot.ShotTestRunner")
+            true
+        } catch (e: Throwable) {
+            false
         }
     }
 }

@@ -1,11 +1,12 @@
-package com.github.pedrovgs.deeppanel
+package com.github.pedrovgs.deeppanel.app
 
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toBitmap
-import com.github.pedrovgs.deeppanel.Pages.resList
+import com.github.pedrovgs.deeppanel.DeepPanel
+import com.github.pedrovgs.deeppanel.app.Pages.resList
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -17,11 +18,11 @@ class MainActivity : AppCompatActivity() {
         var currentPage = 0
         val size: Int = resList.size
         showPredictionForPage(deepPanel, resList[currentPage % size])
-        next.setOnClickListener {
+        nextPageButton.setOnClickListener {
             currentPage = (currentPage + 1) % resList.count()
             showPredictionForPage(deepPanel, resList[currentPage % size])
         }
-        detail.setOnClickListener {
+        detailPageButton.setOnClickListener {
             ExtractPanelsActivity.open(this, resList[currentPage])
         }
     }
