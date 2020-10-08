@@ -5,7 +5,7 @@ Android library used to implement **comic vignettes segmentation using a machine
 
 DeepPanel let's you extract all the panels' location from a comic page **using a machine learning model trained [here](https://github.com/pedrovgs/DeepPanel). This Andorid library does not use Open CV at all, this means the size of the final app you generates will be as small as possible. We've optimized our model in terms of size and performance and implemented the computer vision algorithms we needed without any third party library to optimize the final library size and performance**. Powered by [TensorFlow lite](https://www.tensorflow.org/lite), our already trained panels' segmentation model and some native code, DeepPanel is able to find all the panels' location in less than a second.
 
-![screencast](art/screencast.gif)
+<img src="art/screencast.gif" width="300" />
 
 Keep in mind, **this artificial intelligence solution is designed to simulate the human reading behavior and it will group panels that are related as a human would do while reading a comic book page.** When analyzing a page we do not use image processing algorithms in order to find the panels. Our solution is based on deep learning. We do not use contour detection algorithms at all even when the samples analysis can look similar. If you are looking for a panels contouring solution you can use Open CV or any other image analysis tools like [this project](https://github.com/njean42/kumiko) does.
 
