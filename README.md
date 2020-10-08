@@ -72,7 +72,7 @@ Feel free to contribute, we will be glad to improve this project with your help.
 
 ### Acknowledgement
 
-Special thanks to [Asun](https://github.com/asuncionjc) never doubt we could publish this project :heart:
+Special thanks to [Asun](https://github.com/asuncionjc), who never doubt we could publish this project :heart:
 
 Developed By
 ------------
