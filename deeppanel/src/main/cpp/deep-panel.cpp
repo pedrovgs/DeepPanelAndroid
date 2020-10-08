@@ -139,8 +139,8 @@ DeepPanelResult extract_panels_info(int **labeled_matrix,
                                     int height, float scale,
                                     jint original_image_width,
                                     jint original_image_height) {
-    ConnectedComponentResult improvedAreasResult = find_components(labeled_matrix, width, height);
-    improvedAreasResult = remove_small_areas_and_recover_border(improvedAreasResult, width, height);
-    return extract_panels_data(improvedAreasResult, width, height, scale, original_image_width,
+    ConnectedComponentResult improved_areas_result = find_components(labeled_matrix, width, height);
+    improved_areas_result = remove_small_areas_and_recover_border(improved_areas_result, width, height);
+    return extract_panels_data(improved_areas_result, width, height, scale, original_image_width,
                                original_image_height);
 }
