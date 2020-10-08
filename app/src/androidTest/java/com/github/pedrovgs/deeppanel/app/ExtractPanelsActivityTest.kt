@@ -1,6 +1,7 @@
 package com.github.pedrovgs.deeppanel.app
 
 import android.content.Intent
+import android.view.View
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.github.pedrovgs.deeppanel.app.ExtractPanelsActivity.Companion.resource_id_extra
@@ -95,11 +96,16 @@ class ExtractPanelsActivityTest : ScreenshotTest {
         compareExtractPanelsActivityScreenshot(activity)
     }
 
-    private fun compareExtractPanelsActivityScreenshot(activity: ExtractPanelsActivity) =
-        compareScreenshot(
-            view = activity.findViewById(android.R.id.content),
+    private fun compareExtractPanelsActivityScreenshot(activity: ExtractPanelsActivity) {
+        val root = activity.findViewById<View>(android.R.id.content)
+        runOnUi {
+            root.setBackgroundResource(android.R.color.white)
+        }
+        return compareScreenshot(
+            view = root,
             heightInPx = 2000
         )
+    }
 
     private fun startActivity(resource: Int): ExtractPanelsActivity {
         val intent = Intent(getInstrumentation().targetContext, ExtractPanelsActivity::class.java)
