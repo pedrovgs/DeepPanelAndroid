@@ -44,11 +44,11 @@ class MyApplication : Application() {
 }
 ```
 
-Once you've initialized the library get any comic book page, transform it into a ``Bitmap`` instance and extract the panels' information using ``extractDetailedPanelsInfo`` method as follows:
+Once you've initialized the library get any comic book page, transform it into a ``Bitmap`` instance and extract the panels' information using ``extractPanelsInfo`` method as follows:
 
 ```kotlin
 val deepPanel = DeepPanel()
-val result = deepPanel.extractDetailedPanelsInfo(bitmapSamplePage)
+val result = deepPanel.extractPanelsInfo(bitmapSamplePage)
 result.panels.panelsInfo.forEach { panel ->
             Log.d("DeepPanel", """Left: ${panel.left}, Top: ${panel.top}
                     |Right: ${panel.right}, Bottom: ${panel.bottom}
@@ -57,12 +57,12 @@ result.panels.panelsInfo.forEach { panel ->
         }
 ```
 
-``DetailedPredictionResult`` contains a list of panels with the position of every panel on the page and also a 2d matrix of integers with the following labels inside:
+``PredictionResult`` contains a list of panels with the position of every panel on the page and also a 2d matrix of integers with the following labels inside:
 
 * 0 - Label associated to the page of the content.
 * N - Content related to the same panel on the page.
 
-Do not invoke DeepPanel ``extractDetailedPanelsInfo`` from the main app thread. Even when we can analyze a page in less than 400ms using a Pixel 4 as a reference device, you should not block your app UI at all. Our recommendation is to extract the analysis computation out of the UI thread using any threading mechanism.
+Do not invoke DeepPanel ``extractPanelsInfo`` from the main app thread. Even when we can analyze a page in less than 400ms using a Pixel 4 as a reference device, you should not block your app UI at all. Our recommendation is to extract the analysis computation out of the UI thread using any threading mechanism.
 
 Keep in mind for the first version of this library we consider every panel as a rectangle even if the content panel inside has a different shape. We will improve this in the future, for our very first release we've decided to use this approach because we will always represent the information of the panel on a rectangular screen.
 
