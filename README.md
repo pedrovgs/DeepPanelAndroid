@@ -1,5 +1,5 @@
-DeepPanelAndroid [![Build Status](https://travis-ci.com/pedrovgs/DeepPanelAndroid.svg?token=Kb2RqPaWxFZ8XPxpqvqz&branch=master)](https://travis-ci.com/pedrovgs/DeepPanelAndroid)
-================
+DeepPanelAndroid ![Build, lint, and test](https://github.com/pedrovgs/DeepPanelAndroid/workflows/Build,%20lint,%20and%20test/badge.svg)
+==============
 
 Android library used to implement **comic vignettes segmentation using a machine learning method named deep learning**.
 
