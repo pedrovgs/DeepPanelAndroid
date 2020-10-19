@@ -1,12 +1,7 @@
+#include <stdio.h>
 #include <cstdlib>
 #include <cassert>
-
-class ConnectedComponentResult {
-public:
-    int total_clusters;
-    int **clusters_matrix;
-    int *pixels_per_labels;
-};
+#include "connected-components.hpp"
 
 /* Implementation of Union-Find Algorithm and Hoshen Kopelman Algorithm (aka Connected Component Labeling).
  * You can find the reference implementation here: https://www.ocf.berkeley.edu/~fricke/projects/hoshenkopelman/hk.c.

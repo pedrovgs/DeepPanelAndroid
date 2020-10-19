@@ -1,16 +1,6 @@
-class Panel {
-public:
-    int left;
-    int bottom;
-    int right;
-    int top;
-};
-
-class DeepPanelResult {
-public:
-    ConnectedComponentResult connected_components;
-    Panel *panels;
-};
+#include <stdlib.h>
+#include "deep-panel.hpp"
+#include "connected-components.hpp"
 
 ConnectedComponentResult remove_small_areas_and_recover_border(
         ConnectedComponentResult connected_component_result,
@@ -62,13 +52,21 @@ int clamp(int value, int min, int max) {
     }
 }
 
+int compute_border_size(int original_image_width, int original_image_height) {
+    if (original_image_height > original_image_width) {
+        return original_image_width * 30 / 3056;
+    } else {
+        return original_image_height * 30 / 1988;
+    }
+}
+
 DeepPanelResult
 extract_panels_data(ConnectedComponentResult connected_components_result,
                     int width,
                     int height,
                     float scale,
-                    jint original_image_width,
-                    jint original_image_height) {
+                    int original_image_width,
+                    int original_image_height) {
     int number_of_panels = connected_components_result.total_clusters;
     int current_normalized_label = 0;
     int *normalized_labels = new int[width * height] { 0 };
@@ -106,7 +104,7 @@ extract_panels_data(ConnectedComponentResult connected_components_result,
     } else {
         vertical_correction = ((height * scale) - original_image_height) / 2;
     }
-    int border = 30;
+    int border = compute_border_size(original_image_width, original_image_height);
     for (int i = 1; i <= number_of_panels; i++) {
         Panel panel;
         int proposed_left =
@@ -137,8 +135,8 @@ extract_panels_data(ConnectedComponentResult connected_components_result,
 DeepPanelResult extract_panels_info(int **labeled_matrix,
                                     int width,
                                     int height, float scale,
-                                    jint original_image_width,
-                                    jint original_image_height) {
+                                    int original_image_width,
+                                    int original_image_height) {
     ConnectedComponentResult improved_areas_result = find_components(labeled_matrix, width, height);
     improved_areas_result = remove_small_areas_and_recover_border(improved_areas_result, width, height);
     return extract_panels_data(improved_areas_result, width, height, scale, original_image_width,
